@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 const reportContent = {
   introduction: {
@@ -41,20 +41,32 @@ const reportContent = {
   },
   results: {
     library: {
-      text: "This section presents the performance evaluation results of the classification models implemented using popular machine learning libraries on the test dataset. The metrics used are Accuracy and F1-score (Macro and Weighted), as explained in Section 2.3. Below is a sample evaluation (replace with actual results from the report):",
+      text: "This section presents the performance evaluation results of the classification models implemented using popular machine learning libraries on the test dataset. The metrics used are Accuracy, Precision, Recall and F1-score, as explained in Section 2.3. Below is a sample evaluation (replace with actual results from the report):",
       table: [
-        { model: "Gradient Boosting", accuracy: "0.95", macroF1: "0.92", weightedF1: "0.94" },
-        { model: "XGBoost", accuracy: "0.96", macroF1: "0.93", weightedF1: "0.95" },
-        { model: "SVM", accuracy: "0.94", macroF1: "0.91", weightedF1: "0.93" },
-        { model: "Logistic Regression", accuracy: "0.90", macroF1: "0.88", weightedF1: "0.89" }
+        { model: "Gradient Boosting", accuracy: "0.74", macroF1: "0.53", macroPrecision: "0.50", macroRecall: "0.69" },
+        { model: "XGBoost", accuracy: "0.90", macroF1: "0.78", macroPrecision: "0.74", macroRecall: "0.90" },
+        { model: "SVM", accuracy: "0.94", macroF1: "0.77", macroPrecision: "0.72", macroRecall: "0.91"  },
+        { model: "Logistic Regression", accuracy: "0.67", macroF1: "0.48", macroPrecision: "0.45", macroRecall: "0.77" }
       ]
     }
   }
 };
 
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 
 const HowItWorksPage = () => {
+  // Create refs for each section to track visibility
+  const introductionRef = useRef(null);
+  const theoreticalRef = useRef(null);
+  const methodsRef = useRef(null);
+  const resultsRef = useRef(null);
+
+  // Use useInView to detect when each section is in view
+  const isIntroductionInView = useInView(introductionRef, { once: false, margin: '-100px' });
+  const isTheoreticalInView = useInView(theoreticalRef, { once: false, margin: '-100px' });
+  const isMethodsInView = useInView(methodsRef, { once: false, margin: '-100px' });
+  const isResultsInView = useInView(resultsRef, { once: false, margin: '-100px' });
+
   return (
     <div className="bg-[#363636] text-gray-200 min-h-screen grow w-full">
       <header className="bg-[#363636] p-6 text-center">
@@ -70,13 +82,13 @@ const HowItWorksPage = () => {
       </nav>
       <main>
         <motion.section
+          ref={introductionRef}
           initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0 }}
+          animate={isIntroductionInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.5 }}
           id="introduction"
           className="max-w-11/12 mx-auto my-8 p-4 bg-[#404040] rounded-lg shadow border-l-4 border-[#FFD700]"
         >
-          
           <h2 className="text-3xl font-semibold text-[#FFD700]">Introduction</h2>
           <div className="w-12 h-1 bg-[#FFD700] mt-2"></div>
           <h3 className="text-xl font-medium mt-6 mb-3 text-[#FFD700]">Problem Introduction</h3>
@@ -91,9 +103,10 @@ const HowItWorksPage = () => {
           </ul>
         </motion.section>
         <motion.section
+          ref={theoreticalRef}
           initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          animate={isTheoreticalInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.5 }}
           id="theoretical"
           className="max-w-11/12 mx-auto my-8 p-4 bg-[#404040] rounded-lg shadow border-l-4 border-[#FFD700]"
         >
@@ -110,9 +123,10 @@ const HowItWorksPage = () => {
           <p className="leading-relaxed">{reportContent.theoretical.metrics}</p>
         </motion.section>
         <motion.section
+          ref={methodsRef}
           initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          animate={isMethodsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.5 }}
           id="methods"
           className="max-w-11/12 mx-auto my-8 p-4 bg-[#404040] rounded-lg shadow border-l-4 border-[#FFD700]"
         >
@@ -133,9 +147,10 @@ const HowItWorksPage = () => {
           <p className="leading-relaxed">{reportContent.methods.environment}</p>
         </motion.section>
         <motion.section
+          ref={resultsRef}
           initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          animate={isResultsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.5 }}
           id="results"
           className="max-w-11/12 mx-auto my-8 p-4 bg-[#404040] rounded-lg shadow border-l-4 border-[#FFD700]"
         >
@@ -149,19 +164,37 @@ const HowItWorksPage = () => {
                 <tr>
                   <th className="p-3 text-left font-semibold text-gray-200">Model</th>
                   <th className="p-3 text-left font-semibold text-gray-200">Accuracy</th>
+                  <th className="p-3 text-left font-semibold text-gray-200">Macro Precision</th>
+                  <th className="p-3 text-left font-semibold text-gray-200">Macro Recall</th>
                   <th className="p-3 text-left font-semibold text-gray-200">Macro F1-score</th>
-                  <th className="p-3 text-left font-semibold text-gray-200">Weighted F1-score</th>
                 </tr>
               </thead>
               <tbody className="bg-[#363636]">
-                {reportContent.results.library.table.map((row, index) => (
-                  <tr key={index} className="border-b border-gray-600">
-                    <td className="p-3 text-gray-200">{row.model}</td>
-                    <td className="p-3 text-gray-200">{row.accuracy}</td>
-                    <td className="p-3 text-gray-200">{row.macroF1}</td>
-                    <td className="p-3 text-gray-200">{row.weightedF1}</td>
-                  </tr>
-                ))}
+                {(() => {
+                  // Find maximum values for each metric
+                  const maxAccuracy = Math.max(...reportContent.results.library.table.map(row => parseFloat(row.accuracy) || 0));
+                  const maxMacroPrecision = Math.max(...reportContent.results.library.table.map(row => parseFloat(row.macroPrecision) || 0));
+                  const maxMacroF1 = Math.max(...reportContent.results.library.table.map(row => parseFloat(row.macroF1) || 0));
+                  const maxMacroRecall = Math.max(...reportContent.results.library.table.map(row => parseFloat(row.macroRecall) || 0));
+
+                  return reportContent.results.library.table.map((row, index) => (
+                    <tr key={index} className="border-b border-gray-600">
+                      <td className="p-3 text-gray-200">{row.model}</td>
+                      <td className={`p-3 text-gray-200 ${parseFloat(row.accuracy) === maxAccuracy ? 'font-bold' : ''}`}>
+                        {row.accuracy}
+                      </td>
+                      <td className={`p-3 text-gray-200 ${parseFloat(row.macroPrecision) === maxMacroPrecision ? 'font-bold' : ''}`}>
+                        {row.macroPrecision}
+                      </td>
+                      <td className={`p-3 text-gray-200 ${parseFloat(row.macroRecall) === maxMacroRecall ? 'font-bold' : ''}`}>
+                        {row.macroRecall}
+                      </td>
+                      <td className={`p-3 text-gray-200 ${parseFloat(row.macroF1) === maxMacroF1 ? 'font-bold' : ''}`}>
+                        {row.macroF1}
+                      </td>
+                    </tr>
+                  ));
+                })()}
               </tbody>
             </table>
           </div>

@@ -34,7 +34,7 @@ const Footer = () => {
             ECG Heartbeat
           </h3>
           <p className="text-amber-200 text-sm hidden md:block">
-            AI-driven ECG Analysis
+            Machine Learning-driven ECG Analysis
           </p>
         </motion.div>
 
