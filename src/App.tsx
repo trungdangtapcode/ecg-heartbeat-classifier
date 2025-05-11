@@ -15,9 +15,12 @@ function App() {
   return (
     
     <Router>
-    <div className="min-h-screen flex flex-col">
+    {/* manually min-w-300, I don't know how to fix :( */}
+    <div className="min-h-screen flex flex-col min-w-300">
     <Header/>
+    {/* flex-grow idk how I work :D */}
     <main className="flex-grow">
+      {/* ---------------------------------------------------------------------------------------------------------------------------------------------- */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />

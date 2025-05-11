@@ -36,10 +36,10 @@ const Header = () => {
         {/* Desktop Menu */}
         <ul className="hidden md:flex items-center space-x-8">
           {navItems.map((item) => (
-            <li key={item.to}>
+            <li key={item.to} className=''>
               <Link
                 to={item.to}
-                className="text-sm font-medium text-gray-200 hover:text-yellow-400 transition-colors duration-300 relative group"
+                className="text-sm font-medium text-gray-200 hover:text-yellow-400 hover:bg-yellow-100/50 px-3 py-2 rounded-md transition-all duration-300 relative group"
                 onClick={scrollToTop}
               >
                 {item.label}
@@ -72,7 +72,7 @@ const Header = () => {
             <li key={item.to}>
               <Link
                 to={item.to}
-                className="text-gray-200 hover:text-yellow-400 text-lg font-medium transition-colors duration-300"
+                className="text-gray-200 hover:text-yellow-400 hover:bg-yellow-500/10 px-4 py-2 rounded-md text-lg font-medium transition-all duration-300"
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   scrollToTop();

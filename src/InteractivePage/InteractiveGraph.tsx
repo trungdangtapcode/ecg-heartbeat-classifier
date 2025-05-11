@@ -408,9 +408,10 @@ const InteractiveGraph = forwardRef<InteractiveGraphRef, IProps>(
             //       `${(point.x / WIDTH).toFixed(2)},${(1 - point.y / HEIGHT).toFixed(2)}`
             //   )
             // );
+            computeRegressionPoints();
             console.log(points.map((point) => `${(point.x / WIDTH).toFixed(2)},${(1 - point.y / HEIGHT).toFixed(2)}`));
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+          className="px-6 py-2 w-32 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
         >
           Submit
         </button>
@@ -420,7 +421,7 @@ const InteractiveGraph = forwardRef<InteractiveGraphRef, IProps>(
             setPoints([]);
             setIsViewData(false);
           }}
-          className="px-4 py-2 bg-gray-600 text-white rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+          className="px-6 py-2 w-32 bg-gray-600 text-white rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
         >
           Reset
         </button>
