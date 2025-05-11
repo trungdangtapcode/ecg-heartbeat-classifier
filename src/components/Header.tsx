@@ -15,11 +15,19 @@ const Header = () => {
     { to: '/about', label: 'About' },
   ];
 
+  // Function to scroll to top with smooth animation
+  const scrollToTop = () => {
+    // Only scroll if not already at the top to avoid redundant animations
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="bg-[#363636] text-white shadow-lg sticky top-0 z-50 border-b border-yellow-500/20">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-2" onClick={scrollToTop}>
           <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
             ECG Classification
           </span>
@@ -32,6 +40,7 @@ const Header = () => {
               <Link
                 to={item.to}
                 className="text-sm font-medium text-gray-200 hover:text-yellow-400 transition-colors duration-300 relative group"
+                onClick={scrollToTop}
               >
                 {item.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-yellow-400 transition-all duration-300 group-hover:w-full" />
@@ -64,7 +73,10 @@ const Header = () => {
               <Link
                 to={item.to}
                 className="text-gray-200 hover:text-yellow-400 text-lg font-medium transition-colors duration-300"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  scrollToTop();
+                }}
               >
                 {item.label}
               </Link>

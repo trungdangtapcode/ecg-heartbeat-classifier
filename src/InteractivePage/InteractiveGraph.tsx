@@ -1,22 +1,25 @@
-import { Switch } from "@/components/ui/switch";
-import React, { useEffect, useRef, useState } from "react";
+// import { Switch } from "@/components/ui/switch";
+import React, { useEffect, useRef, useState, forwardRef } from "react";
 
-
+export interface InteractiveGraphRef {
+  setPointsFromInput: (inputPoints: Point[]) => void;
+}
 
 interface IProps {
   points_input: Point[];
   setPoints_input: React.Dispatch<React.SetStateAction<Point[]>>;
   regPoints_output: Point[];
   setRegPoints_output: React.Dispatch<React.SetStateAction<Point[]>>;
+  ref: React.RefObject<HTMLCanvasElement>;
 }
 
-const InteractiveGraph: React.FC<IProps> = ({points_input, setPoints_input, regPoints_output, setRegPoints_output}) => {
+const InteractiveGraph = forwardRef<InteractiveGraphRef, IProps>(
+    ({points_input, setPoints_input, regPoints_output, setRegPoints_output}, ref) => {
   const WIDTH = 2000;
   const HEIGHT = 200;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [points, setPoints] = useState<Point[]>(points_input.map((point) => ({ x: (point.x-0.5) * WIDTH, y: (point.y-0.5) * HEIGHT }))); // Convert to canvas coordinates
-  console.log(points)
   const [regPoints, setRegPoints] = useState<Point[]>(regPoints_output); // Regression points
   const [draggingPoint, setDraggingPoint] = useState<number | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
@@ -353,9 +356,10 @@ const InteractiveGraph: React.FC<IProps> = ({points_input, setPoints_input, regP
   };
 
   useEffect(()=>{
-    setPoints_input(points.map((point) => ({ x: point.x/WIDTH, y: 1-point.y/HEIGHT })));
+    setPoints_input(points.map((point) => ({ x: point.x/WIDTH+0.5, y: point.y/HEIGHT+0.5 })).sort((a, b) => a.x - b.x));
   }, [points]);
 
+  //https://chatgpt.com/c/68205dbe-9f20-800a-b9d0-f1befc8dae07
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -364,6 +368,12 @@ const InteractiveGraph: React.FC<IProps> = ({points_input, setPoints_input, regP
       container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
     }
   }, []);
+
+  React.useImperativeHandle(ref, () => ({
+    setPointsFromInput: (inputPoints: Point[]) => {
+      setPoints(inputPoints.map((point) => ({ x: (point.x-0.5) * WIDTH, y: (point.y-0.5) * HEIGHT })));
+    }
+  }));
 
   return (
     <div className="flex flex-col items-center p-4">
@@ -389,36 +399,43 @@ const InteractiveGraph: React.FC<IProps> = ({points_input, setPoints_input, regP
         </div>
       </div>
 
-      <button
-        onClick={()=>{
-          // console.log(regPoints.map((point) => (point.x/WIDTH).toFixed(2) + "," + (point.y/HEIGHT).toFixed(2)));
-          console.log(computeRegressionPoints().map((point) => (point.x/WIDTH).toFixed(2) + "," + (1-point.y/HEIGHT).toFixed(2)))
-        }}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Submit
-      </button>
+      <div className="flex gap-4 mt-4">
+        <button
+          onClick={() => {
+            // console.log(
+            //   computeRegressionPoints().map(
+            //     (point) =>
+            //       `${(point.x / WIDTH).toFixed(2)},${(1 - point.y / HEIGHT).toFixed(2)}`
+            //   )
+            // );
+            console.log(points.map((point) => `${(point.x / WIDTH).toFixed(2)},${(1 - point.y / HEIGHT).toFixed(2)}`));
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+        >
+          Submit
+        </button>
 
-      <button
-        onClick={()=>{
-          setPoints([
-          ]);
-          setIsViewData(false);
-        }}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Reset
-      </button>
+        <button
+          onClick={() => {
+            setPoints([]);
+            setIsViewData(false);
+          }}
+          className="px-4 py-2 bg-gray-600 text-white rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+        >
+          Reset
+        </button>
+      </div>
 
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
+      {/* <div className="flex flex-col items-center justify-center h-screen gap-4">
       <Switch hidden={true}
         checked={isViewData}
         onCheckedChange={setIsViewData}
       />
-      </div>
+      </div> */}
 
     </div>
   );
-};
+});
+
 
 export default InteractiveGraph;

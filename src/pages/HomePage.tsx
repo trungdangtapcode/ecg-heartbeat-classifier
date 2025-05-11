@@ -23,6 +23,7 @@ const HomePage = () => {
   const scrollRef = useRef(null); // This ref is used to track the scroll position
   const { scrollY } = useScroll({ container: scrollRef });
   const blurValue = useTransform(scrollY, [200, 300], [0, 10]);
+  //https://chatgpt.com/c/68202b4f-f5e8-800a-b8a6-c239def517fe
   const controls = useAnimation();
   useEffect(() => {
     return blurValue.onChange((v) => {
@@ -69,6 +70,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen font-playwrite text-gray-100 relative">
       {/* Full-Screen Background Image with Scroll-Based Blur */}
+      {/* chatgpt + grok fix */}
       {/* absolute inset-x-0 top-0 bottom-0 bg-cover bg-center z-0 */}
       {/* fixed inset-0 bg-no-repeat bg-center z-0 */}
       <motion.div
