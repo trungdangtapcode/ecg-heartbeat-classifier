@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heartbeat Classification</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const App = () => {
+            const [samples, setSamples] = useState([]);
+            const [selectedSignal, setSelectedSignal] = useState(null);
+            const [chartInstance, setChartInstance] = useState(null);
+            const [classificationResult, setClassificationResult] = useState(null);
+            const [testFileResults, setTestFileResults] = useState([]);
+
+            // Load sample data on mount
+            useEffect(() => {
+                fetch("http://localhost:5000/get_samples")
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Loaded samples:", data);
+                        if (data.samples) {
+                            setSamples(data.samples);
+                        } else {
+                            alert("Cannot load sample data: " + (data.error || "Unknown error"));
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error loading samples:", error);
+                        alert("Error loading samples: " + error.message);
+                    });
+            }, []);
+
+            // Update chart when signal is selected
+            useEffect(() => {
+                if (selectedSignal !== null && samples[selectedSignal]) {
+                    const ctx = document.getElementById("heartbeatChart").getContext("2d");
+                    const signalData = samples[selectedSignal].signal;
+
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+
+                    const newChart = new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels: Array.from({ length: signalData.length }, (_, i) => i),
+                            datasets: [
+                                {
+                                    label: "Heartbeat Signal",
+                                    data: signalData,
+                                    borderColor: "blue",
+                                    borderWidth: 1,
+                                    fill: false,
+                                },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                x: { title: { display: true, text: "Time" } },
+                                y: { title: { display: true, text: "Amplitude" } },
+                            },
+                        },
+                    });
+                    setChartInstance(newChart);
+                }
+            }, [selectedSignal, samples]);
+
+            const handleSelectChange = (e) => {
+                const index = e.target.value;
+                setSelectedSignal(index ? parseInt(index) : null);
+                setClassificationResult(null);
+            };
+
+            const handleClassify = () => {
+                const signalToClassify = selectedSignal !== null && samples[selectedSignal] ? samples[selectedSignal].signal : null;
+                if (!signalToClassify || !Array.isArray(signalToClassify)) {
+                    alert("Please select a valid signal to classify!");
+                    return;
+                }
+
+                fetch("http://localhost:5000/classify", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ signal: signalToClassify }),
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            alert("Server error: " + data.error);
+                            return;
+                        }
+                        console.log("Classification result:", data);
+                        setClassificationResult(data.results);
+                    })
+                    .catch(error => {
+                        console.error("Classification error:", error.message);
+                        alert("Error classifying signal: " + error.message);
+                    });
+            };
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    alert("Please select a file to upload!");
+                    return;
+                }
+
+                Papa.parse(file, {
+                    complete: (result) => {
+                        const rows = result.data;
+                        console.log("Parsed CSV rows:", rows);
+                        if (rows.length === 0) {
+                            alert("File contains no data!");
+                            return;
+                        }
+
+                        const signals = rows.map(row => {
+                            if (row.length < 188) return null; // Ensure sufficient columns (187 signals + 1 label)
+                            const signal = row.slice(0, -1).map(val => {
+                                const num = Number(val);
+                                return isNaN(num) ? 0 : num; // Handle non-numeric values
+                            });
+                            return signal.length === 187 ? signal : null; // Ensure correct length
+                        }).filter(signal => signal !== null);
+
+                        console.log("Processed signals:", signals);
+                        if (signals.length === 0) {
+                            alert("No valid signals in file!");
+                            return;
+                        }
+
+                        classifyTestSignals(signals);
+                    },
+                    header: false,
+                    skipEmptyLines: true,
+                    error: (error) => {
+                        console.error("Error parsing CSV:", error);
+                        alert("Error reading CSV file: " + error.message);
+                    },
+                });
+            };
+
+            const classifyTestSignals = async (signals) => {
+                const results = [];
+                for (let i = 0; i < signals.length; i++) {
+                    const signal = signals[i];
+                    console.log("Classifying signal:", signal);
+                    try {
+                        const response = await fetch("http://localhost:5000/classify", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ signal: signal }), // Sửa lỗi: thay KU bằng signal
+                        });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        console.log("Classification response:", data);
+                        if (data.error) {
+                            results.push({ id: i, error: data.error });
+                        } else {
+                            results.push({ id: i, results: data.results });
+                        }
+                    } catch (error) {
+                        console.error("Error classifying signal:", error);
+                        results.push({ id: i, error: error.message });
+                    }
+                }
+                console.log("Test file results:", results);
+                setTestFileResults(results);
+            };
+
+            return (
+                <div className="container mx-auto p-4">
+                    <h1 className="text-2xl font-bold mb-4">Heartbeat Classification</h1>
+
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="signalSelect">
+                            Select Heartbeat Signal
+                        </label>
+                        <select
+                            id="signalSelect"
+                            value={selectedSignal !== null ? selectedSignal : ""}
+                            onChange={handleSelectChange}
+                            className="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
+                        >
+                            <option value="">Select a signal...</option>
+                            {samples.map((sample, index) => (
+                                <option key={sample.id} value={index}>
+                                    Signal {sample.id} (Label: {sample.label})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedSignal !== null && (
+                        <div className="mb-4">
+                            <h2 className="text-lg font-semibold">Signal Visualization</h2>
+                            <canvas id="heartbeatChart"></canvas>
+                        </div>
+                    )}
+
+                    <button
+                        onClick={handleClassify}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4"
+                    >
+                        Classify Heartbeat
+                    </button>
+
+                    {classificationResult && (
+                        <div className="mt-4">
+                            <h2 className="text-lg font-semibold">Classification Results</h2>
+                            <table className="min-w-full bg-white border">
+                                <thead>
+                                    <tr>
+                                        <th className="py-2 px-4 border">Model</th>
+                                        <th className="py-2 px-4 border">Predicted Label</th>
+                                        <th className="py-2 px-4 border">Probabilities</th>
+                                        <th className="py-2 px-4 border">Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {classificationResult.map((result, index) => (
+                                        <tr key={index}>
+                                            <td className="py-2 px-4 border">{result.model}</td>
+                                            <td className="py-2 px-4 border">{result.prediction || "-"}</td>
+                                            <td className="py-2 px-4 border">
+                                                {result.probabilities && Array.isArray(result.probabilities)
+                                                    ? result.probabilities
+                                                          .map((prob, index) => `Class ${index}: ${(prob * 100).toFixed(2)}%`)
+                                                          .join(", ")
+                                                    : "-"}
+                                            </td>
+                                            <td className="py-2 px-4 border">{result.error || "-"}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    <div className="mt-6">
+                        <h2 className="text-lg font-semibold mb-2">Upload Test File</h2>
+                        <input
+                            type="file"
+                            accept=".csv"
+                            onChange={handleFileUpload}
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                    </div>
+
+                    {testFileResults.length > 0 && (
+                        <div className="mt-4">
+                            <h2 className="text-lg font-semibold">Test File Classification Results</h2>
+                            {testFileResults.map(result => (
+                                <div key={result.id} className="mb-4">
+                                    <h3 className="text-md font-semibold">Signal ID: {result.id}</h3>
+                                    {result.error ? (
+                                        <p className="text-red-500">Error: {result.error}</p>
+                                    ) : (
+                                        <table className="min-w-full bg-white border">
+                                            <thead>
+                                                <tr>
+                                                    <th className="py-2 px-4 border">Model</th>
+                                                    <th className="py-2 px-4 border">Predicted Label</th>
+                                                    <th className="py-2 px-4 border">Probabilities</th>
+                                                    <th className="py-2 px-4 border">Error</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {result.results.map((res, index) => (
+                                                    <tr key={index}>
+                                                        <td className="py-2 px-4 border">{res.model}</td>
+                                                        <td className="py-2 px-4 border">{res.prediction || "-"}</td>
+                                                        <td className="py-2 px-4 border">
+                                                            {res.probabilities && Array.isArray(res.probabilities)
+                                                                ? res.probabilities
+                                                                      .map((prob, index) => `Class ${index}: ${(prob * 100).toFixed(2)}%`)
+                                                                      .join(", ")
+                                                                : "-"}
+                                                        </td>
+                                                        <td className="py-2 px-4 border">{res.error || "-"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<App />);
+    </script>
+</body>
+</html>
