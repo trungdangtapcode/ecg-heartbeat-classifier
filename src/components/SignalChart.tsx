@@ -11,7 +11,7 @@ const SignalChart: React.FC<SignalChartProps> = ({ signalData }) => {
   const chartInstanceRef = useRef<Chart | null>(null); // Store chart instance locally
 
   useEffect(() => {
-    console.log('SignalChart useEffect triggered', signalData );
+    // console.log('SignalChart useEffect triggered', signalData );
     if (signalData === undefined || signalData.length === 0) {
       return
     }
@@ -34,7 +34,7 @@ const SignalChart: React.FC<SignalChartProps> = ({ signalData }) => {
           {
             label: 'Heartbeat Signal',
             data: signalData,
-            borderColor: 'blue',
+            borderColor: 'white',
             borderWidth: 1,
             fill: false,
           },

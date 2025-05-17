@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import SignalChart from "@/components/SignalChart"
 import SignalSelector from "@/components/SignalSelector"
+import ClassificationResult from "@/components/ClassificationResult"
 
 const tmp = [
     { x: 0.01, y: 0.01 },
@@ -61,7 +62,20 @@ const fetchingSamples = async (setSamples: SetSamples): Promise<void> => {
     });
 }
 
-const fetchingResult = async (signalToClassify: any) => {
+interface ClassificationResultType {
+    // Define the expected structure of the classification result here
+    // For example:
+    results: {
+        model: string;
+    probabilities: number[];
+    prediction: string;
+    }[];
+}
+
+const fetchingResult = async (
+    signalToClassify: number[],
+    setClassificationResult: React.Dispatch<React.SetStateAction<ClassificationResultType | null>>
+) => {
     fetch('http://192.168.1.1:5000/classify', {
         method: 'POST',
         headers: {
@@ -121,8 +135,8 @@ const InteractivePage = () => {
         }
     }
 
-
-    const [classificationResult, setClassificationResult] = useState(null);
+    const [classificationResult, setClassificationResult] = useState<ClassificationResultType | null>(null);
+    
     const [selectedSignal, setSelectedSignal] = useState<number | null>(null);
     const [samples, setSamples] = useState<Sample[]>([]);
     const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
@@ -185,6 +199,22 @@ const InteractivePage = () => {
                 selectedSignal={selectedSignal}
                 onSelectChange={handleSelectChange}
             />
+            <Button
+                onClick={() => {
+                    if (dataPoints.length>0) {
+                        const signalToClassify = dataPoints.map((instance) =>  instance.y );
+                        console.log("Signal to classify:", signalToClassify);
+                        fetchingResult(signalToClassify, setClassificationResult);
+                    } else {
+                        alert("Please select a signal to classify.");
+                    }
+                }}
+                disabled={dataPoints.length === 0}
+            >
+                Classify Signal
+            </Button>
+            <ClassificationResult classificationResult={classificationResult} />
+            <div className="h-20"/>
         </div>
     )
 }
