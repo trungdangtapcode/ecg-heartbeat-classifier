@@ -2,22 +2,26 @@ import { useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
 import { FaHeartbeat } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const HomePage = () => {
   const heroControls = useAnimation();
   const datasetControls = useAnimation();
   const mlControls = useAnimation();
   const ctaControls = useAnimation();
+  const demoControls = useAnimation();
 
   const heroRef = useRef(null);
   const datasetRef = useRef(null);
   const mlRef = useRef(null);
   const ctaRef = useRef(null);
+  const demoRef = useRef(null);
 
   const isHeroInView = useInView(heroRef, { once: false, margin: '-100px' });
   const isDatasetInView = useInView(datasetRef, { once: false, margin: '-100px' });
   const isMlInView = useInView(mlRef, { once: false, margin: '-100px' });
   const isCtaInView = useInView(ctaRef, { once: false, margin: '-100px' });
+  const isDemoInView = useInView(demoRef, { once: false, margin: '-100px' });
 
   // Scroll-based blur effect
   const scrollRef = useRef(null); // This ref is used to track the scroll position
@@ -66,6 +70,15 @@ const HomePage = () => {
       ctaControls.start({ opacity: 0, scale: 0.9 });
     }
   }, [isCtaInView, ctaControls]);
+
+  useEffect(() => {
+    if (isDemoInView) {
+      demoControls.start({ opacity: 1, y: 0, transition: { duration: 0.5 } });
+    } else {
+      demoControls.start({ opacity: 0, y: 20 });
+    }
+    console.log("isDemo", isDemoInView)
+  }, [isDemoInView, demoControls]);
 
   return (
     <div className="min-h-screen font-playwrite text-gray-100 relative">
@@ -211,8 +224,26 @@ const HomePage = () => {
           </div>
         </motion.section>
 
+        {/* Live Demo Section */}
+        <motion.section
+          ref={demoRef}
+          animate={demoControls}
+          className="py-16 bg-[#424242]/80 text-white"
+        >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold">Live demo</h2>
+          <p className="mt-4 text-lg">Time to test it out :D</p>
+          <Button
+            asChild
+            className="mt-6 bg-[#424242] hover:bg-[#232323] text-white px-8 py-3 rounded-md font-semibold transition"
+          >
+            <Link to="/live-demo">Demo</Link>
+          </Button>
+        </div>
+      </motion.section>
+
         {/* Footer */}
-        <footer className="bg-[#424242]/80 backdrop-blur-sm text-gray-300 py-8">
+        <footer className="bg-[#363636]/80 backdrop-blur-sm text-gray-300 py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p>© 2023 ECG Heartbeat Dataset. All rights reserved.</p>
             <p className="mt-2 text-sm">Sourced from Physionet’s MIT-BIH and PTB Databases.</p>
