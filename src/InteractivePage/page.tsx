@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import InteractiveGraph, { type InteractiveGraphRef } from "./InteractiveGraph"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import SignalChart from "@/components/SignalChart"
+import SignalSelector from "@/components/SignalSelector"
 
 const tmp = [
     { x: 0.01, y: 0.01 },
@@ -20,6 +22,71 @@ interface AnchorData {
     anchor: Point[];
     label: number;
 }
+
+interface Sample {
+    // Define the structure of a sample as returned by your backend
+    // Example:
+    // id: number;
+    // name: string;
+    // data: any;
+    id: string | number;
+    label: string;
+    signal: number[];
+}
+
+interface FetchSamplesResponse {
+    samples?: Sample[];
+    error?: string;
+}
+
+type SetSamples = (samples: Sample[]) => void;
+
+const fetchingSamples = async (setSamples: SetSamples): Promise<void> => {
+    fetch('http://192.168.1.1:5000/get_samples')
+    .then((response: Response) => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json() as Promise<FetchSamplesResponse>;
+    })
+    .then((data: FetchSamplesResponse) => {
+        console.log('Loaded samples:', data);
+        if (data.samples) {
+            setSamples(data.samples);
+        } else {
+            alert('Không thể tải dữ liệu mẫu: ' + (data.error || 'Lỗi không xác định'));
+        }
+    })
+    .catch((error: Error) => {
+        console.error('Lỗi khi tải dữ liệu mẫu:', error);
+        alert('Lỗi khi tải dữ liệu mẫu: ' + error.message);
+    });
+}
+
+const fetchingResult = async (signalToClassify: any) => {
+    fetch('http://192.168.1.1:5000/classify', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ signal: signalToClassify }),
+        })
+        .then((response) => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then((data) => {
+            if (data.error) {
+                alert('Lỗi từ server: ' + data.error);
+                return;
+            }
+            console.log('Classification result:', data);
+            setClassificationResult(data);
+        })
+        .catch((error) => {
+            console.error('Classification error:', error.message);
+            alert('Error classifying signal: ' + error.message);
+        });
+
+};
 
 const InteractivePage = () => {
     const [points, setPoints] = useState<Point[]>(tmp)
@@ -54,6 +121,30 @@ const InteractivePage = () => {
         }
     }
 
+
+    const [classificationResult, setClassificationResult] = useState(null);
+    const [selectedSignal, setSelectedSignal] = useState<number | null>(null);
+    const [samples, setSamples] = useState<Sample[]>([]);
+    const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
+    useEffect(() => {
+        fetchingSamples(setSamples);
+    }, []);
+
+
+    const handleSelectChange = (value: string) => {
+        setSelectedSignal(value ? parseInt(value) : null);
+        setClassificationResult(null);
+        if (value === null) {
+            setSelectedSample(null);
+        } else {
+            setSelectedSample(samples[parseInt(value)]);
+            setDataPoints(samples[parseInt(value)].signal.map((x: number, idx: number) => ({ x: idx / samples[parseInt(value)].signal.length, y: x })));
+        }
+    };
+
+    
+
+
     return (
         <div className="p-4 space-y-4">
             <div className="flex items-center gap-2">
@@ -86,6 +177,13 @@ const InteractivePage = () => {
                 setPoints_input={setPoints}
                 regPoints_output={dataPoints}
                 setRegPoints_output={setDataPoints}
+            />
+
+            <SignalChart signalData={dataPoints.map((instance) =>  instance.y )} />
+            <SignalSelector 
+                samples={samples}
+                selectedSignal={selectedSignal}
+                onSelectChange={handleSelectChange}
             />
         </div>
     )
