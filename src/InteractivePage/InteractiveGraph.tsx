@@ -408,6 +408,7 @@ const InteractiveGraph = forwardRef<InteractiveGraphRef, IProps>(
             //       `${(point.x / WIDTH).toFixed(2)},${(1 - point.y / HEIGHT).toFixed(2)}`
             //   )
             // );
+            console.log("Anchor: ", JSON.stringify(points.map((point) => ({ x: point.x/WIDTH+0.5, y: point.y/HEIGHT+0.5 })).sort((a, b) => a.x - b.x)));
             computeRegressionPoints();
             // console.log(points.map((point) => `${(point.x / WIDTH).toFixed(2)},${(1 - point.y / HEIGHT).toFixed(2)}`));
           }}

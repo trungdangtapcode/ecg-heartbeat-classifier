@@ -1,3 +1,4 @@
+from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import GradientBoostingClassifier
 gbc = GradientBoostingClassifier(
     n_estimators=3,  # Number of boosting stages
@@ -216,18 +217,101 @@ CORS(app)  # Allow CORS from all origins
 print("Current directory:", os.getcwd())
 
 # Define model filenames (REPLACE WITH YOUR ACTUAL FILENAMES)
-model_names = ['GradientBoostingClassifier','LogisticRegression_scratch', 'SVC', 'XGBoost','SVC_scratch']
+model_names = ['GradientBoostingClassifier','LogisticRegression_scratch', 'SVC', 'XGBoost','SVC_scratch', 'LogisticRegression_FFT', 'XGBoost_FFT']
 
 # Load scaler
+# try:
+#     scaler = joblib.load("scaler.pkl")
+#     print("Successfully loaded scaler.pkl")
+# except FileNotFoundError:
+#     print("Error: Could not find scaler.pkl")
+#     scaler = None
+# except Exception as e:
+#     print(f"Error loading scaler.pkl: {str(e)}")
+#     scaler = None
+
+# get mitbih_train.csv convert it to fft then save the standard scaler
+def process_mitbih_fft():
+    """
+    Process the mitbih_train.csv file by applying FFT and saving a standard scaler
+    """
+    try:
+        # Load data
+        print("Loading mitbih_train.csv...")
+        df = pd.read_csv("mitbih_train.csv", header=None)
+        print(f"Loaded dataset with shape: {df.shape}")
+        
+        # Extract features (all columns except the last one which is the target)
+        X = df.iloc[:, :-1].values
+        
+        # Apply FFT
+        print("Applying FFT transformation...")
+        X_fft = np.fft.fft(X, axis=1)
+        
+        # Use magnitude of FFT (discard phase information)
+        # Only use first half as the second half is symmetric for real signals
+        X_fft_magnitude = np.abs(X_fft[:, :X_fft.shape[1] // 2])
+        
+        
+        # Apply standard scaling
+        print("Fitting standard scaler...")
+        fft_scaler = StandardScaler()
+        fft_scaler.fit(X_fft_magnitude)
+        print("Shape of FFT data:", X_fft_magnitude.shape)
+        
+        # Save the scaler
+        scaler_filename = "fft_scaler.pkl"
+        joblib.dump(fft_scaler, scaler_filename)
+        print(f"StandardScaler saved to {scaler_filename}")
+        
+        return fft_scaler
+    except FileNotFoundError:
+        print("Error: mitbih_train.csv not found")
+        return None
+    except Exception as e:
+        print(f"Error processing mitbih data: {str(e)}")
+        return None
+try:
+    fft_scaler = joblib.load("fft_scaler.pkl")
+    print("Successfully loaded fft_scaler.pkl")
+except FileNotFoundError:
+    print("fft_scaler.pkl not found, creating new one...")
+    fft_scaler = process_mitbih_fft()
+
+def process_mitbih():
+    """
+    Process the mitbih_train.csv file and saving a standard scaler
+    """
+    try:
+        # Load data
+        print("Loading mitbih_train.csv...")
+        df = pd.read_csv("mitbih_train.csv", header=None)
+        print(f"Loaded dataset with shape: {df.shape}")
+        
+        # Extract features (all columns except the last one which is the target)
+        X = df.iloc[:, :-1].values
+        
+        scaler = StandardScaler()
+        scaler.fit(X)
+        
+        # Save the scaler
+        scaler_filename = "scaler.pkl"
+        joblib.dump(scaler, scaler_filename)
+        print(f"StandardScaler saved to {scaler_filename}")
+
+        return scaler
+    except FileNotFoundError:
+        print("Error: mitbih_train.csv not found")
+        return None
+    except Exception as e:
+        print(f"Error processing mitbih data: {str(e)}")
+        return None
 try:
     scaler = joblib.load("scaler.pkl")
     print("Successfully loaded scaler.pkl")
 except FileNotFoundError:
-    print("Error: Could not find scaler.pkl")
-    scaler = None
-except Exception as e:
-    print(f"Error loading scaler.pkl: {str(e)}")
-    scaler = None
+    print("scaler.pkl not found, creating new one...")
+    scaler = process_mitbih()
 
 # Load models
 models = []
@@ -247,13 +331,39 @@ for model_name in model_names:
 try:
     df = pd.read_csv("mitbih_train.csv", header=None, on_bad_lines='skip')
     print(f"Loaded {len(df)} rows from mitbih_train.csv")
+
     df = df.dropna()
     print(f"After dropna: {len(df)} rows")
+
     if not df.empty:
-        sample_data = df.iloc[:min(10, len(df))].values
+        # Assume the label is in the last column
+        label_col = df.columns[-1]
+        class_counts = df[label_col].value_counts()
+        
+        if len(class_counts) < 5:
+            raise ValueError("Less than 5 classes found in the data")
+
+        # Determine number of samples per class (e.g. 6 for 5 classes = 30 total)
+        samples_per_class = 30 // 5
+
+        # Collect samples
+        sampled_df = df.groupby(label_col).apply(
+            lambda g: g.sample(n=min(samples_per_class, len(g)), random_state=42)
+        ).reset_index(drop=True)
+
+        # If total < 30 due to class imbalance, optionally sample more from over-represented classes
+        if len(sampled_df) < 30:
+            needed = 30 - len(sampled_df)
+            extras = df[df[label_col].isin(class_counts[class_counts > samples_per_class].index)]
+            extra_samples = extras.sample(n=needed, random_state=42)
+            sampled_df = pd.concat([sampled_df, extra_samples], ignore_index=True)
+
+        sample_data = sampled_df.values
+        print(f"Sampled {len(sample_data)} rows with all 5 classes")
     else:
         sample_data = np.array([])
         print("Error: mitbih_train.csv contains no valid data")
+
 except FileNotFoundError:
     sample_data = np.array([])
     print("Error: mitbih_train.csv not found")
@@ -280,9 +390,10 @@ def get_samples():
         except ValueError:
             print(f"Invalid label in row {i}: {row[-1]}")
             continue
+        labels = ["Normal", "Supraventricular Ectopic", "Ventricular Ectopic", "Fusion", "Unknown"]
         samples.append({
             "id": i,
-            "label": label,
+            "label": labels[label],
             "signal": signal.tolist()
         })
     if not samples:
@@ -313,6 +424,10 @@ def classify():
         # Apply scaler once
         try:
             data_scaled = scaler.transform(data)
+            X_fft = np.fft.fft(data, axis=1)
+            X_fft_magnitude = np.abs(X_fft[:, :X_fft.shape[1] // 2])
+            fft_data = fft_scaler.transform(X_fft_magnitude)
+            print(data_scaled)
         except Exception as e:
             print(f"Scaler error with data shape {data.shape}: {str(e)}")
             return jsonify({"error": f"Scaler transformation failed: {str(e)}"}), 500
@@ -329,6 +444,11 @@ def classify():
                 if model_name == "XGBoost":
                     Ddata_scaled = xgb.DMatrix(data_scaled)
                     prediction = model.predict(Ddata_scaled)[0]
+                elif model_name == "XGBoost_FFT":
+                    Dfft_data = xgb.DMatrix(fft_data)
+                    prediction = model.predict(Dfft_data)[0]
+                elif model_name.endswith("FFT"):
+                    prediction = model.predict(fft_data)[0]
                 else:
                     prediction = model.predict(data_scaled)[0]
                 try:
@@ -355,6 +475,11 @@ def classify():
                         probabilities = model.decision_function(data_scaled)[0].tolist()
                         # use np softmax to convert to probabilities
                         probabilities = softmax(probabilities).tolist()
+                    elif model_name=="XGBoost_FFT":
+                        probabilities = model.predict_proba(xgb.DMatrix(fft_data, label = np.random.randint(0,5,fft_data.shape[1]))
+                                                            )[0].tolist()
+                    elif model_name.endswith("FFT"):
+                        probabilities = model.predict_proba(fft_data)[0].tolist()
                     else: probabilities = model.predict_proba(data_scaled)[0].tolist()
                     results.append({
                         "model": model_name,
@@ -362,12 +487,14 @@ def classify():
                         "probabilities": probabilities
                     })
                 except AttributeError:
+                    print(f"Model {model_name} does not support predict_proba")
                     results.append({
                         "model": model_name,
                         "prediction": result,
                         "error": "Model does not support predict_proba"
                     })
             except Exception as e:
+                print(f"Error with model {model_name}: {str(e)}")
                 results.append({
                     "model": model_name,
                     "error": str(e)
@@ -379,4 +506,4 @@ def classify():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=True)

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import SignalChart from "@/components/SignalChart"
 import SignalSelector from "@/components/SignalSelector"
 import ClassificationResult from "@/components/ClassificationResult"
+import { FileUpload } from "@/components/FileUpload"
 
 const tmp = [
     { x: 0.01, y: 0.01 },
@@ -74,8 +75,10 @@ interface ClassificationResultType {
 
 const fetchingResult = async (
     signalToClassify: number[],
-    setClassificationResult: React.Dispatch<React.SetStateAction<ClassificationResultType | null>>
+    setClassificationResult: React.Dispatch<React.SetStateAction<ClassificationResultType | null>>,
+    isLoadingResult: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
+    isLoadingResult(true);
     fetch('http://192.168.1.1:5000/classify', {
         method: 'POST',
         headers: {
@@ -85,6 +88,7 @@ const fetchingResult = async (
         })
         .then((response) => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            isLoadingResult(false);
             return response.json();
         })
         .then((data) => {
@@ -107,6 +111,7 @@ const InteractivePage = () => {
     const [dataPoints, setDataPoints] = useState<Point[]>([])
     const [anchorData, setAnchorData] = useState<AnchorData[]>([])
     const [selectedAnchor, setSelectedAnchor] = useState<string>("")
+    const [isLoadingResult, setIsLoadingResult] = useState<boolean>(false);
 
     const graphRef = useRef<InteractiveGraphRef>(null)
 
@@ -139,7 +144,7 @@ const InteractivePage = () => {
     
     const [selectedSignal, setSelectedSignal] = useState<number | null>(null);
     const [samples, setSamples] = useState<Sample[]>([]);
-    const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
+    const [, setSelectedSample] = useState<Sample | null>(null);
     useEffect(() => {
         fetchingSamples(setSamples);
     }, []);
@@ -199,12 +204,19 @@ const InteractivePage = () => {
                 selectedSignal={selectedSignal}
                 onSelectChange={handleSelectChange}
             />
+            <FileUpload
+                onClassifySignals={(signals: number[][]) => {
+                    const signal = signals[0];
+                    // console.log("Signal to classify:", signal);
+                    setDataPoints(signal.map((x: number, idx: number) => ({ x: idx / signal.length, y: x })));
+                }}
+            />
             <Button
                 onClick={() => {
                     if (dataPoints.length>0) {
                         const signalToClassify = dataPoints.map((instance) =>  instance.y );
                         console.log("Signal to classify:", signalToClassify);
-                        fetchingResult(signalToClassify, setClassificationResult);
+                        fetchingResult(signalToClassify, setClassificationResult, setIsLoadingResult);
                     } else {
                         alert("Please select a signal to classify.");
                     }
@@ -213,6 +225,7 @@ const InteractivePage = () => {
             >
                 Classify Signal
             </Button>
+            {isLoadingResult && <div className="text-yellow-500">Classifying...</div>}
             <ClassificationResult classificationResult={classificationResult} />
             <div className="h-20"/>
         </div>
