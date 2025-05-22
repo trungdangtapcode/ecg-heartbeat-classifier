@@ -12,6 +12,7 @@ import scipy.optimize as opt
 from sklearn.linear_model import LogisticRegression
 from scipy.special import softmax
 import xgboost as xgb
+from shap_xgboost import get_shap_values_for_instance
 
 class MyLogisticRegression:
     def __init__(self, C=1.0):
@@ -217,7 +218,21 @@ CORS(app)  # Allow CORS from all origins
 print("Current directory:", os.getcwd())
 
 # Define model filenames (REPLACE WITH YOUR ACTUAL FILENAMES)
-model_names = ['GradientBoostingClassifier','LogisticRegression_scratch', 'SVC', 'XGBoost','SVC_scratch', 'LogisticRegression_FFT', 'XGBoost_FFT']
+model_names = [
+            'LogisticRegression_scratch', 
+            'SVC_scratch', 
+            'GradientBoostingClassifier_SMOTE',
+            'XGBoost_SMOTE',
+            'SVC_SMOTE', 
+            'LogisticRegression_SMOTE',
+            'GradientBoostingClassifier_FFT',
+            'XGBoost_FFT', 
+            'LogisticRegression_FFT', 
+            'SVC_FFT',
+            'GradientBoostingClassifier_classweight',
+            'XGBoost_classweight',
+            'LogisticRegression_classweight',
+            'SVC_classweight',]
 
 # Load scaler
 # try:
@@ -441,7 +456,7 @@ def classify():
                 continue
             
             try:
-                if model_name == "XGBoost":
+                if model_name == "XGBoost_SMOTE" or model_name == "XGBoost_classweight":
                     Ddata_scaled = xgb.DMatrix(data_scaled)
                     prediction = model.predict(Ddata_scaled)[0]
                 elif model_name == "XGBoost_FFT":
@@ -468,16 +483,19 @@ def classify():
                     if model_name=="LogisticRegression_scratch":
                         data_scaled_tmp = np.hstack([np.ones((data_scaled.shape[0], 1)), data_scaled])
                         probabilities = model.predict_proba(data_scaled_tmp)[0].tolist()
-                    elif model_name=="XGBoost":
+                    elif model_name=="XGBoost_SMOTE" or model_name=="XGBoost_classweight":
                         probabilities = model.predict_proba(xgb.DMatrix(data_scaled, label = np.random.randint(0,5,data_scaled.shape[1]))
                                                             )[0].tolist()
-                    elif model_name=="SVC_scratch" or model_name=="SVC":
+                    elif model_name=="SVC_scratch" or model_name=="SVC_SMOTE" or model_name=="SVC_classweight":
                         probabilities = model.decision_function(data_scaled)[0].tolist()
                         # use np softmax to convert to probabilities
                         probabilities = softmax(probabilities).tolist()
                     elif model_name=="XGBoost_FFT":
                         probabilities = model.predict_proba(xgb.DMatrix(fft_data, label = np.random.randint(0,5,fft_data.shape[1]))
                                                             )[0].tolist()
+                    elif model_name=="SVC_FFT":
+                        probabilities = model.decision_function(fft_data)[0].tolist()
+                        probabilities = softmax(probabilities).tolist()
                     elif model_name.endswith("FFT"):
                         probabilities = model.predict_proba(fft_data)[0].tolist()
                     else: probabilities = model.predict_proba(data_scaled)[0].tolist()
@@ -503,6 +521,23 @@ def classify():
         return jsonify({"results": results})
     except Exception as e:
         print(f"Error in classify endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/get_shape_xgboost', methods=['POST'])
+def get_shape_xgboost():
+    try:
+        data = request.json.get("signal")
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        shap_values, scaled_instance = get_shap_values_for_instance(data)
+        # transpose shap_values
+        shap_values = np.transpose(shap_values) # shape = (5, 187)
+        # scaled_instance = shape (187, )
+        return jsonify({"shap_values": shap_values.tolist(),
+            "scaled_instance": scaled_instance.tolist()})
+    except Exception as e:
+        print(f"Error in get_shape_xgboost endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":

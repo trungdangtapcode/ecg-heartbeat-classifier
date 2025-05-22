@@ -59,7 +59,7 @@ const ClassificationResult: React.FC<ClassificationResultProps> = ({
                           key={idx}
                           className="inline-block px-2 py-1 text-sm rounded-full bg-secondary text-secondary-foreground"
                         >
-                          {classesName[idx]}: {(prob * 100).toFixed(2)}%
+                          {classesName[idx]}: { (prob * 100).toFixed(prob < 0.1 ? 3 : 2)}%
                         </span>
                       ))}
                     </div>
