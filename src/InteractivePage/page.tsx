@@ -6,6 +6,7 @@ import SignalChart from "@/components/SignalChart"
 import SignalSelector from "@/components/SignalSelector"
 import ClassificationResult from "@/components/ClassificationResult"
 import { FileUpload } from "@/components/FileUpload"
+import ShapValuesChart from "@/components/ShapValuesChart"
 
 const tmp = [
     { x: 0.01, y: 0.01 },
@@ -227,6 +228,12 @@ const InteractivePage = () => {
             </Button>
             {isLoadingResult && <div className="text-yellow-500">Classifying...</div>}
             <ClassificationResult classificationResult={classificationResult} />
+            {classificationResult && (
+                <ShapValuesChart signalToExplain={dataPoints.map((instance) => instance.y)} />
+            )}
+            {/* {dataPoints.length > 0 && (
+                <ShapValuesChart signalToExplain={dataPoints.map((instance) => instance.y)} />
+            )} */}
             <div className="h-20"/>
         </div>
     )

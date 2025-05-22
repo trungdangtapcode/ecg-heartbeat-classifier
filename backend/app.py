@@ -530,12 +530,13 @@ def get_shape_xgboost():
         if not data:
             return jsonify({"error": "No data provided"}), 400
 
-        shap_values, scaled_instance = get_shap_values_for_instance(data)
+        shap_values, scaled_instance, class_idx = get_shap_values_for_instance(data)
         # transpose shap_values
         shap_values = np.transpose(shap_values) # shape = (5, 187)
         # scaled_instance = shape (187, )
         return jsonify({"shap_values": shap_values.tolist(),
-            "scaled_instance": scaled_instance.tolist()})
+            "scaled_instance": scaled_instance.tolist(),
+            "class_idx": int(class_idx)})
     except Exception as e:
         print(f"Error in get_shape_xgboost endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 400

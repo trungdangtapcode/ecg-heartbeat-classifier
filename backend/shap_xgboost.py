@@ -53,6 +53,9 @@ def get_shap_values_for_instance(x_instance, model_explainer=explainer, data_sca
     if num_classes is not None and num_classes != 5:
         raise ValueError(f"Expected 5-class model, got {num_classes} classes")
 
+    x_instance_dmatrix = xgb.DMatrix(x_instance_scaled)
+    class_idx = clf.predict(x_instance_dmatrix, output_margin=False)[0]
+
     # Handle SHAP values based on output format
     if isinstance(shap_values, list):
         # Multi-class, list format (older SHAP versions)
@@ -75,7 +78,7 @@ def get_shap_values_for_instance(x_instance, model_explainer=explainer, data_sca
     if shap_vals_array.shape != (187, 5):
         raise ValueError(f"Expected output shape (187, 5), got {shap_vals_array.shape}")
     
-    return shap_vals_array, x_instance_scaled
+    return shap_vals_array, x_instance_scaled, class_idx
 
 def plot_shap_values(x_instance_scaled, shap_vals, clf=clf):
     """
