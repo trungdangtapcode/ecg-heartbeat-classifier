@@ -5,6 +5,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 interface TypingEffectProps {
   title: string;
   code: string;
+  typingEnabled?: boolean;
 }
 
 const useTypingEffect = (text: string, speed: number = 5): string => {
@@ -43,8 +44,9 @@ const useTypingEffect = (text: string, speed: number = 5): string => {
   return displayedText;
 };
 
-const CodeTypingEffect = ({ title, code }: TypingEffectProps) => {
-  const displayedCode = useTypingEffect(code);
+const CodeTypingEffect = ({ title, code, typingEnabled = true }: TypingEffectProps) => {
+  const typedCode = useTypingEffect(code);
+  const displayedCode = typingEnabled ? typedCode : code;
 
   return (
     <div className="p-6 bg-[#1a1a1a] rounded-xl w-full max-w-2xl text-left flex flex-col items-start shadow-lg border border-[#333]">
@@ -63,11 +65,10 @@ const CodeTypingEffect = ({ title, code }: TypingEffectProps) => {
             textAlign: 'left',
             display: 'block',
           }}
-          wrapLines={true}
-        >
+          wrapLines={true}        >
           {displayedCode || ' '}
         </SyntaxHighlighter>
-        <span className="inline-block w-[2px] h-[1em] bg-white animate-pulse -ml-[2px] relative -top-[1em]" />
+        {typingEnabled && <span className="inline-block w-[2px] h-[1em] bg-white animate-pulse -ml-[2px] relative -top-[1em]" />}
       </div>
     </div>
   );

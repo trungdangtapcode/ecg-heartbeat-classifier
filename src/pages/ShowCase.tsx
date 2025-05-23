@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import CodeTypingEffect from '@/components/TypingCodeEffect';
@@ -71,31 +71,45 @@ predictions = model.predict(X_test)`;
 // Main CodeShowcase Component
 const CodeShowcase = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+  const [typingEnabled, setTypingEnabled] = useState(true);
 
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
   const scrollNext = () => emblaApi && emblaApi.scrollNext();
+  const toggleTyping = () => setTypingEnabled(prev => !prev);
 
   return (
     <div className="w-full min-w-300 max-w-4xl mx-auto py-12 min-h-screen flex flex-col items-center bg-[#0d0d0d] text-[#facc15]">
-      <h1 className="text-4xl font-extrabold text-center mb-8 drop-shadow-md bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent">
-        Model Implementation
-      </h1>
+      <div className="flex items-center justify-between w-full mb-8">
+        <h1 className="text-4xl font-extrabold text-center drop-shadow-md bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+          Model Implementation
+        </h1>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Typing Effect</span>
+          <label className="relative inline-flex items-center cursor-pointer mr-8">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={typingEnabled}
+              onChange={toggleTyping}
+            />
+            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#facc15]"></div>
+          </label>
+        </div>
+      </div>
       <div className="embla w-full overflow-hidden rounded-lg shadow-lg border border-[#333]" ref={emblaRef}>
-        <div className="min-h-60 embla__container flex">
-          <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
-            <CodeTypingEffect title="SVM from Scratch" code={svmFromScratch} />
+        <div className="min-h-60 embla__container flex">          <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
+            <CodeTypingEffect title="SVM from Scratch" code={svmFromScratch} typingEnabled={typingEnabled} />
           </div>
           <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
-            <CodeTypingEffect title="Logistic Regression from Scratch" code={logisticRegressionFromScratch} />
+            <CodeTypingEffect title="Logistic Regression from Scratch" code={logisticRegressionFromScratch} typingEnabled={typingEnabled} />
           </div>
           <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
-            <CodeTypingEffect title="SVM (scikit-learn)" code={svmSklearn} />
+            <CodeTypingEffect title="SVM (scikit-learn)" code={svmSklearn} typingEnabled={typingEnabled} />
           </div>
           <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
-            <CodeTypingEffect title="Logistic Regression (scikit-learn)" code={logisticRegressionSklearn} />
-          </div>
-          <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
-            <CodeTypingEffect title="XGBoost Classifier" code={xgboostClassifier} />
+            <CodeTypingEffect title="Logistic Regression (scikit-learn)" code={logisticRegressionSklearn} typingEnabled={typingEnabled} />
+          </div>          <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
+            <CodeTypingEffect title="XGBoost Classifier" code={xgboostClassifier} typingEnabled={typingEnabled} />
           </div>
         </div>
       </div>
