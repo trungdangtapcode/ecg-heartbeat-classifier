@@ -5,25 +5,25 @@ import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 // Define props interface
-interface ShapValuesChartProps {
+interface LimeValuesChartProps {
   signalToExplain: number[] | null;
 }
 
-interface ShapResponse {
-  shap_values: number[][]; // Shape: (5, 187) - 5 classes, 187 time points
+interface LimeResponse {
+  Lime_values: number[][]; // Shape: (5, 187) - 5 classes, 187 time points
   scaled_instance: number[]; // Shape: (187,) - Scaled ECG signal
   class_idx: number; // Index of the predicted class
   error?: string;
 }
 
-const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) => {
+const LimeValuesChart: React.FC<LimeValuesChartProps> = ({ signalToExplain }) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [shapData, setShapData] = useState<ShapResponse | null>(null);
+  const [limeData, setLimeData] = useState<LimeResponse | null>(null);
 
-  // Fetch SHAP values
+  // Fetch LIME values
   useLayoutEffect(() => {
     if (!signalToExplain || signalToExplain.length === 0) {
       console.log('No signal to explain');
@@ -33,7 +33,7 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
     setIsLoading(true);
     setError(null);
 
-    fetch('http://192.168.1.1:5000/get_shape_xgboost', {
+    fetch('http://192.168.1.1:5000/get_lime_xgboost', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,10 +51,10 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
           setError(data.error);
           return;
         }
-        setShapData(data);
+        setLimeData(data);
       })
       .catch(error => {
-        console.error('Error fetching SHAP values:', error);
+        console.error('Error fetching LIME values:', error);
         setError(error instanceof Error ? error.message : 'Unknown error');
       })
       .finally(() => {
@@ -72,8 +72,8 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
 
   // Render chart
   useLayoutEffect(() => {
-    if (!shapData || !chartRef.current) {
-      console.error('No shapData or canvas ref available');
+    if (!limeData || !chartRef.current) {
+      console.error('No limeData or canvas ref available');
       return;
     }
 
@@ -85,16 +85,16 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
     }
 
     // Validate data
-    const { scaled_instance: [scaledEcgSignal], shap_values: shapValues } = shapData;
+    const { scaled_instance: [scaledEcgSignal], Lime_values: limeValues } = limeData;
     if (
       !Array.isArray(scaledEcgSignal) ||
       !scaledEcgSignal.every(val => typeof val === 'number' && !isNaN(val)) ||
-      !shapValues.every(arr => Array.isArray(arr) && arr.every(val => typeof val === 'number' && !isNaN(val))) ||
-      !shapValues.every(arr => arr.length === scaledEcgSignal.length)
+      !limeValues.every(arr => Array.isArray(arr) && arr.every(val => typeof val === 'number' && !isNaN(val))) ||
+      !limeValues.every(arr => arr.length === scaledEcgSignal.length)
     ) {
-      console.error('Invalid data:', { scaledEcgSignal, shapValues });
+      console.error('Invalid data:', { scaledEcgSignal, limeValues });
       console.error("scaledEcgSignal:", scaledEcgSignal);
-      setError('Invalid SHAP data format');
+      setError('Invalid LIME data format');
       return;
     }
 
@@ -104,16 +104,16 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
       chartInstanceRef.current = null;
     }
 
-    // console.log('SHAP values shape:', shapValues.length, 'x', shapValues[0]?.length);
+    console.log('LIME values shape:', limeValues.length, 'x', limeValues[0]?.length);
 
     // Class names for MIT-BIH dataset
     const classNames = ['Normal', 'Supraventricular', 'Ventricular', 'Fusion', 'Unknown'];
 
-    // Find class with highest SHAP values
-    // const shapSum = shapValues.map(classValues =>
+    // Find class with highest LIME values
+    // const limeSum = limeValues.map(classValues =>
     //   classValues.reduce((sum, val) => sum + Math.abs(val), 0)
     // );
-    const predictedClassIdx = shapData.class_idx;
+    const predictedClassIdx = limeData.class_idx;
 
     // Colors for each class
     const colors = [
@@ -135,8 +135,8 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
         pointRadius: 0,
       },
       ...classNames.map((className, idx) => ({
-        label: `SHAP Values (${className})`,
-        data: shapValues[idx],
+        label: `LIME Values (${className})`,
+        data: limeValues[idx],
         borderColor: colors[idx],
         borderWidth: idx === predictedClassIdx ? 3 : 1,
         pointRadius: 0,
@@ -145,7 +145,7 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
       })),
     ];
 
-    // console.log('Chart datasets:', datasets);
+    console.log('Chart datasets:', datasets);
 
     // Create chart
     chartInstanceRef.current = new Chart(ctx, {
@@ -197,7 +197,7 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
         chartInstanceRef.current = null;
       }
     };
-  }, [shapData]);
+  }, [limeData]);
 
   if (isLoading) {
     return <div className="text-yellow-500 mb-4">Loading SHAP values...</div>;
@@ -207,20 +207,20 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
     return <div className="text-red-500 mb-4">Error loading SHAP values: {error}</div>;
   }
 
-  if (!shapData) {
+  if (!limeData) {
     return null;
   }
 
   return (
-    <div className="mb-18 mt-8" style={{ position: 'relative', width: '100%', height: '400px' }}>
-      <h2 className="text-lg font-semibold">Model Explanation (SHAP Values)</h2>
+    <div className="mb-4" style={{ position: 'relative', width: '100%', height: '400px' }}>
+      <h2 className="text-lg font-semibold">Model Explanation (LIME Values)</h2>
       <div className="text-sm text-gray-500 mb-2">
         This chart shows how each time point in the signal contributes to the prediction for each class.
         The highlighted line represents the predicted class.
       </div>
-      <canvas id="shapValuesChart" ref={chartRef} style={{ width: '100%', height: '100%' }}></canvas>
+      <canvas id="limeValuesChart" ref={chartRef} style={{ width: '100%', height: '100%' }}></canvas>
     </div>
   );
 };
 
-export default ShapValuesChart;
+export default LimeValuesChart;

@@ -7,6 +7,7 @@ import SignalSelector from "@/components/SignalSelector"
 import ClassificationResult from "@/components/ClassificationResult"
 import { FileUpload } from "@/components/FileUpload"
 import ShapValuesChart from "@/components/ShapValuesChart"
+import LimeValuesChart from "@/components/LimeValuesChart"
 
 const tmp = [
     { x: 0.01, y: 0.01 },
@@ -162,7 +163,11 @@ const InteractivePage = () => {
         }
     };
 
-    
+    const [dataFeatures, setDataFeatures] = useState<number[]>([]);
+    useEffect(()=>{
+        setClassificationResult(null);
+        setDataFeatures(dataPoints.map((instance) => instance.y));
+    },[dataPoints])
 
 
     return (
@@ -199,7 +204,7 @@ const InteractivePage = () => {
                 setRegPoints_output={setDataPoints}
             />
 
-            <SignalChart signalData={dataPoints.map((instance) =>  instance.y )} />
+            <SignalChart signalData={dataFeatures} />
             <SignalSelector 
                 samples={samples}
                 selectedSignal={selectedSignal}
@@ -229,7 +234,10 @@ const InteractivePage = () => {
             {isLoadingResult && <div className="text-yellow-500">Classifying...</div>}
             <ClassificationResult classificationResult={classificationResult} />
             {classificationResult && (
-                <ShapValuesChart signalToExplain={dataPoints.map((instance) => instance.y)} />
+                <ShapValuesChart signalToExplain={dataFeatures} />
+            )}
+            {classificationResult && (
+                <LimeValuesChart signalToExplain={dataFeatures} />
             )}
             {/* {dataPoints.length > 0 && (
                 <ShapValuesChart signalToExplain={dataPoints.map((instance) => instance.y)} />

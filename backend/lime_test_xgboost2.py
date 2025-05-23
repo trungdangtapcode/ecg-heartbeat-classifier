@@ -33,24 +33,27 @@ def predict_proba_wrapper(X):
     dmatrix = xgb.DMatrix(X)
     return model.predict(dmatrix)  # Ensure model was trained with 'multi:softprob'
 
+# Verify model prediction
+print(predict_proba_wrapper(X_test[20000:20001]))
+
 # LIME explainer
 explainer = lime.lime_tabular.LimeTabularExplainer(
     training_data=np.array(X_train),
-    feature_names=[str(i) for i in range(187)],  # Feature names as time points
+    feature_names=[str(i) for i in range(187)],  # Convert feature names to strings
     class_names=class_names,
     mode='classification'
 )
 
-# Explain one instance with all 187 features
-i = 0  # Instance index
-exp = explainer.explain_instance(X_test[i], predict_proba_wrapper, num_features=187)
+# Explain one instance
+i = 0
+exp = explainer.explain_instance(X_test[i], predict_proba_wrapper, num_features=5)
 
 # Convert explanation data to JSON-serializable format
 def convert_to_serializable(exp):
     serializable_exp = []
     for label, feature_weights in exp.local_exp.items():
         serializable_weights = [
-            (int(feature), float(weight))  # Convert feature index to int, weight to float
+            (int(feature), float(weight))  # Convert feature index (int32) to int, weight to float
             for feature, weight in feature_weights
         ]
         serializable_exp.append((label, serializable_weights))
@@ -59,14 +62,14 @@ def convert_to_serializable(exp):
 # Override the local_exp attribute with serializable data
 exp.local_exp = dict(convert_to_serializable(exp))
 
-# Extract and print LIME values for all 187 features for each class
-print(f"LIME Explanation for instance {i}:")
+# Extract and print feature values for each class
+print(f"Explanation for instance {i}:")
 for class_idx, feature_weights in exp.local_exp.items():
     class_name = class_names[class_idx]
     print(f"\nClass: {class_name} (Index: {class_idx})")
-    print("Feature Index | Feature Name  | Weight")
+    print("Feature Index | Feature Name | Weight")
     print("-" * 40)
-    for feature_idx, weight in sorted(feature_weights, key=lambda x: x[0]):  # Sort by feature index
+    for feature_idx, weight in feature_weights:
         feature_name = f"Time Point {feature_idx}"
         print(f"{feature_idx:11} | {feature_name:12} | {weight:.6f}")
 
@@ -74,28 +77,18 @@ for class_idx, feature_weights in exp.local_exp.items():
 feature_importance = {
     class_names[class_idx]: [
         {"feature": f"Time Point {feat_idx}", "weight": weight}
-        for feat_idx, weight in sorted(feature_weights, key=lambda x: x[0])  # Sort by feature index
+        for feat_idx, weight in feature_weights
     ]
     for class_idx, feature_weights in exp.local_exp.items()
 }
 
-# Save to JSON file for further analysis
+# Print the dictionary (optional)
 import json
-with open("lime_feature_importance_all.json", "w") as f:
-    json.dump(feature_importance, f, indent=2)
-print("\nFeature importance saved to lime_feature_importance_all.json")
+print("\nFeature Importance Dictionary:")
+print(json.dumps(feature_importance, indent=2))
 
-# Optionally, save to CSV for easier inspection
-import pandas as pd
-dfs = []
-for class_idx, feature_weights in exp.local_exp.items():
-    class_name = class_names[class_idx]
-    df = pd.DataFrame(
-        [(feat_idx, f"Time Point {feat_idx}", weight) for feat_idx, weight in feature_weights],
-        columns=["Feature Index", "Feature Name", "Weight"]
-    )
-    df["Class"] = class_name
-    dfs.append(df)
-result_df = pd.concat(dfs, ignore_index=True)
-result_df.to_csv("lime_feature_importance_all.csv", index=False)
-print("Feature importance saved to lime_feature_importance_all.csv")
+# Save the explanation to HTML
+# html_path = "lime_explanation.html"
+# exp.save_to_file(html_path)
+
+# print(f"Explanation saved to {html_path}")

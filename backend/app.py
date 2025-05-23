@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from scipy.special import softmax
 import xgboost as xgb
 from shap_xgboost import get_shap_values_for_instance
+from lime_xgboost import get_lime_explanations_for_instance
 
 class MyLogisticRegression:
     def __init__(self, C=1.0):
@@ -535,6 +536,25 @@ def get_shape_xgboost():
         shap_values = np.transpose(shap_values) # shape = (5, 187)
         # scaled_instance = shape (187, )
         return jsonify({"shap_values": shap_values.tolist(),
+            "scaled_instance": scaled_instance.tolist(),
+            "class_idx": int(class_idx)})
+    except Exception as e:
+        print(f"Error in get_shape_xgboost endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+    
+@app.route('/get_lime_xgboost', methods=['POST'])
+def get_shape_xgboost_lime():
+    try:
+        data = request.json.get("signal")
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        scaled_instance, lime_values, class_idx = get_lime_explanations_for_instance(data)
+        scaled_instance = np.array(scaled_instance)/500
+        # transpose shap_values
+        # shap_values = np.transpose(shap_values) # shape = (5, 187)
+        # scaled_instance = shape (187, )
+        return jsonify({"Lime_values":lime_values.tolist(),
             "scaled_instance": scaled_instance.tolist(),
             "class_idx": int(class_idx)})
     except Exception as e:
