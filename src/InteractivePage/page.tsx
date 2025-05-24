@@ -8,6 +8,7 @@ import ClassificationResult from "@/components/ClassificationResult"
 import { FileUpload } from "@/components/FileUpload"
 import ShapValuesChart from "@/components/ShapValuesChart"
 import LimeValuesChart from "@/components/LimeValuesChart"
+import { Link } from "react-router-dom"
 
 const tmp = [
     { x: 0.01, y: 0.01 },
@@ -46,7 +47,7 @@ interface FetchSamplesResponse {
 type SetSamples = (samples: Sample[]) => void;
 
 const fetchingSamples = async (setSamples: SetSamples): Promise<void> => {
-    fetch('http://192.168.1.1:5000/get_samples')
+    fetch(`${import.meta.env.VITE_BACKED_URL}/get_samples`)
     .then((response: Response) => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return response.json() as Promise<FetchSamplesResponse>;
@@ -81,7 +82,7 @@ const fetchingResult = async (
     isLoadingResult: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
     isLoadingResult(true);
-    fetch('http://192.168.1.1:5000/classify', {
+    fetch(`${import.meta.env.VITE_BACKED_URL}/classify`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -195,6 +196,15 @@ const InteractivePage = () => {
                 >
                     Load Selected Anchor
                 </Button>
+                <Link
+                    to="/arduino"
+                    className="cursor-pointer"
+                >
+                    <Button 
+                    >
+                        Connect Device
+                    </Button>
+                </Link>
             </div>
             <InteractiveGraph
                 ref={graphRef}

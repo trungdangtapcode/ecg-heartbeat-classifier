@@ -80,7 +80,7 @@ const CodeShowcase = () => {
   return (
     <div className="w-full min-w-300 max-w-4xl mx-auto py-12 min-h-screen flex flex-col items-center bg-[#0d0d0d] text-[#facc15]">
       <div className="flex items-center justify-between w-full mb-8">
-        <h1 className="text-4xl font-extrabold text-center drop-shadow-md bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+        <h1 className="ml-10 text-4xl font-extrabold text-center drop-shadow-md bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent">
           Model Implementation
         </h1>
         <div className="flex items-center gap-2">

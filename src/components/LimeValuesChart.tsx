@@ -174,7 +174,7 @@ const LimeValuesChart: React.FC<LimeValuesChartProps> = ({ signalToExplain }) =>
         plugins: {
           title: {
             display: true,
-            text: `SHAP Values - Predicted Class: ${classNames[predictedClassIdx]}`,
+            text: `LIME Values - Predicted Class: ${classNames[predictedClassIdx]}`,
           },
           tooltip: {
             mode: 'index',
@@ -200,11 +200,11 @@ const LimeValuesChart: React.FC<LimeValuesChartProps> = ({ signalToExplain }) =>
   }, [limeData]);
 
   if (isLoading) {
-    return <div className="text-yellow-500 mb-4">Loading SHAP values...</div>;
+    return <div className="text-yellow-500 mb-4">Loading LIME values...</div>;
   }
 
   if (error) {
-    return <div className="text-red-500 mb-4">Error loading SHAP values: {error}</div>;
+    return <div className="text-red-500 mb-4">Error loading LIME values: {error}</div>;
   }
 
   if (!limeData) {

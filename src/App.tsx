@@ -10,6 +10,7 @@ import HowItWorksPage from './pages/HowItWorksPage';
 // import LiveDemoPage from './pages/LiveDemoPage';
 import AboutPage from './pages/AboutPage';
 import CodeShowcase from './pages/ShowCase';
+import ArduinoPage from './pages/ArduinoPage';
 function App() {
 
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/model" element={<CodeShowcase />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/live-demo" element={<InteractivePage />} />
+        <Route path="/arduino" element={<ArduinoPage />} />
       </Routes>
     
     </main>
