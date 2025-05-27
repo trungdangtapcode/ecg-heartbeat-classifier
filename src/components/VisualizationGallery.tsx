@@ -39,7 +39,7 @@ const VisualizationGallery = ({ images }: VisualizationProps) => {
             key={selectedImageIndex}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 1.5 }}
             className="bg-[#333] p-3 sm:p-4 rounded-lg border border-[#555] shadow-md"
           >
             <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-md">

@@ -47,7 +47,13 @@ interface FetchSamplesResponse {
 type SetSamples = (samples: Sample[]) => void;
 
 const fetchingSamples = async (setSamples: SetSamples): Promise<void> => {
-    fetch(`${import.meta.env.VITE_BACKED_URL}/get_samples`)
+    fetch(`${import.meta.env.VITE_BACKED_URL}/get_samples`, 
+        {
+            method: "get",
+            headers: new Headers({
+            "ngrok-skip-browser-warning": "69420",
+        }),
+    })
     .then((response: Response) => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return response.json() as Promise<FetchSamplesResponse>;
@@ -86,6 +92,7 @@ const fetchingResult = async (
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            "ngrok-skip-browser-warning": "69420", //factos: ngrok automatically skip for POST
         },
         body: JSON.stringify({ signal: signalToClassify }),
         })

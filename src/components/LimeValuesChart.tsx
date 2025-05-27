@@ -33,7 +33,7 @@ const LimeValuesChart: React.FC<LimeValuesChartProps> = ({ signalToExplain }) =>
     setIsLoading(true);
     setError(null);
 
-    fetch('http://192.168.1.1:5000/get_lime_xgboost', {
+    fetch(`${import.meta.env.VITE_BACKED_URL}/get_lime_xgboost`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

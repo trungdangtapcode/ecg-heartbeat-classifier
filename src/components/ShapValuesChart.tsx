@@ -33,7 +33,7 @@ const ShapValuesChart: React.FC<ShapValuesChartProps> = ({ signalToExplain }) =>
     setIsLoading(true);
     setError(null);
 
-    fetch('http://192.168.1.1:5000/get_shape_xgboost', {
+    fetch(`${import.meta.env.VITE_BACKED_URL}/get_shape_xgboost`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
