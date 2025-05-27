@@ -83,6 +83,7 @@ export const scrollVariants = {
 };
 
 // Animation utilities
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createDelayedVariants = (baseVariants: any, delayStep: number = 0.1) => {
   return (index: number) => ({
     ...baseVariants,

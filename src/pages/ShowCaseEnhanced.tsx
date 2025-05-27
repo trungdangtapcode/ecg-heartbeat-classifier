@@ -5,6 +5,7 @@ import CodeTypingEffect from '@/components/TypingCodeEffect';
 import AlgorithmCards from '@/components/AlgorithmCards';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from 'framer-motion';
+import BenchmarkScore from '@/components/BenchmarkScore';
 
 // Code Snippets
 const svmFromScratch = `import numpy as np
@@ -364,7 +365,7 @@ const algorithms = [
       library: svmSklearn,
       scratch: svmFromScratch
     },
-    illustration: "/plot/hyperparameter_search/accuracy_svmhyper.png"
+    illustration: "/illustration/svm_rbf.png"
   },
   {
     name: "Logistic Regression",
@@ -379,7 +380,7 @@ const algorithms = [
       library: logisticRegressionSklearn,
       scratch: logisticRegressionFromScratch
     },
-    illustration: "/plot/sklearn_logistic_coef.png"
+    illustration: "/illustration/lr_bfgs.png"
   },
   {
     name: "XGBoost",
@@ -394,7 +395,7 @@ const algorithms = [
       library: xgboostClassifier,
       scratch: "# XGBoost is a complex algorithm optimized through years of research.\n# A from-scratch implementation would be extensive.\n# For learning purposes, we can use the library implementation\n# and examine its internals via documentation and publications."
     },
-    illustration: "/plot/benchmarkplot/roc_curve_XGBoost.png"
+    illustration: "/illustration/xgboost.png"
   }
 ];
 
@@ -403,6 +404,8 @@ const ShowCase = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
   const [typingEnabled, setTypingEnabled] = useState(true);
   const [activeTab, setActiveTab] = useState("code");
+//   const [benchmarkViz, setBenchmarkViz] = useState<'roc' | 'precision-recall' | 'calibration'>('roc');
+//   const [selectedModel, setSelectedModel] = useState<'XGBoost' | 'SVM' | 'Logistic'>('XGBoost');
 
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
   const scrollNext = () => emblaApi && emblaApi.scrollNext();
@@ -487,18 +490,19 @@ const ShowCase = () => {
 
             <div className="flex justify-center gap-4 mt-6">
               <button
-                className="bg-[#facc15] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-lg transition duration-300 shadow-md"
+                className="bg-[#facc15] hover:bg-yellow-400 text-white font-bold py-2 px-5 rounded-lg transition duration-300 shadow-md"
                 onClick={scrollPrev}
               >
                 Previous
               </button>
               <button
-                className="bg-[#facc15] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-lg transition duration-300 shadow-md"
+                className="bg-[#facc15] hover:bg-yellow-400 text-white font-bold py-2 px-5 rounded-lg transition duration-300 shadow-md"
                 onClick={scrollNext}
               >
                 Next
               </button>
             </div>
+            <BenchmarkScore/>
           </TabsContent>
 
           {/* Algorithms Tab */}

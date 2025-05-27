@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Card, 
   CardContent, 
-  CardDescription, 
+//   CardDescription, 
   CardFooter, 
   CardHeader, 
   CardTitle 
@@ -103,7 +103,8 @@ const AlgorithmCards = ({ algorithms }: AlgorithmProps) => {
             </Card>
           </motion.div>
         ))}
-      </div>      <motion.div
+      </div>      
+      <motion.div
         key={selectedAlgorithm.name}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -143,14 +144,15 @@ const AlgorithmCards = ({ algorithms }: AlgorithmProps) => {
                 <p className="text-xs sm:text-sm text-gray-300 font-mono">{selectedAlgorithm.complexity.inference}</p>
               </div>
             </div>
-          </div>          {selectedAlgorithm.illustration && (
+          </div>          
+		  {selectedAlgorithm.illustration && (
             <div className="mb-6">
               <h4 className="text-lg font-medium text-[#FFD700] mb-3">Visual Explanation</h4>
               <div className="bg-[#2B2B2B] p-3 sm:p-4 rounded border border-gray-700 flex justify-center">
                 <img 
                   src={selectedAlgorithm.illustration} 
                   alt={`${selectedAlgorithm.name} illustration`} 
-                  className="max-w-full max-h-[200px] sm:max-h-[300px] object-contain"
+                  className="max-w-full max-h-[200px] sm:max-h-[300px] object-contain rounded-2xl"
                 />
               </div>
             </div>
@@ -166,7 +168,7 @@ const AlgorithmCards = ({ algorithms }: AlgorithmProps) => {
               <TabsContent value="library" className="mt-4">
                 <div className="bg-[#1a1a1a] p-3 sm:p-4 rounded border border-gray-700">
                   <div className="overflow-x-auto">
-                    <pre className="text-gray-300 font-mono text-xs sm:text-sm whitespace-pre">
+                    <pre className="text-gray-300 font-mono text-xs sm:text-sm whitespace-pre text-left">
                       {selectedAlgorithm.codeSnippet.library}
                     </pre>
                   </div>
@@ -175,7 +177,7 @@ const AlgorithmCards = ({ algorithms }: AlgorithmProps) => {
               <TabsContent value="scratch" className="mt-4">
                 <div className="bg-[#1a1a1a] p-3 sm:p-4 rounded border border-gray-700">
                   <div className="overflow-x-auto">
-                    <pre className="text-gray-300 font-mono text-xs sm:text-sm whitespace-pre">
+                    <pre className="text-gray-300 font-mono text-xs sm:text-sm whitespace-pre text-left">
                       {selectedAlgorithm.codeSnippet.scratch}
                     </pre>
                   </div>

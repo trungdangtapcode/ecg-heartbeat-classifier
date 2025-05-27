@@ -38,7 +38,7 @@ const reportContent = {
           title: "Data Normalization",
           description: "Z-score normalization using StandardScaler is applied separately to X_train and X_test so that features have mean 0 and variance 1.",
           technical: "scaler = StandardScaler()\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)",
-          image: "/plot/fft.png"
+          image: "/illustration/standard_scaler.png"
         },
         {
           title: "Handling Class Imbalance", 
@@ -49,7 +49,7 @@ const reportContent = {
           title: "Feature Transformation",
           description: "Fast Fourier Transform (FFT) is applied to transform data from time domain to frequency domain, helping identify periodic characteristics in ECG signals.",
           technical: "X_train_fft = np.abs(np.fft.fft(X_train))\nX_test_fft = np.abs(np.fft.fft(X_test))",
-          image: "/plot/fft.png"
+          image: "/illustration/fft.png"
         },
         {
           title: "Train-Test Split",
@@ -121,7 +121,7 @@ const reportContent = {
   },  visualizations: [
     {
       src: "/plot/fft.png",
-      title: "Time Domain vs Frequency Domain",
+      title: "Time Domain to Frequency Domain",
       description: "Visualization of an ECG signal in both time domain (original) and frequency domain (after FFT transformation). The FFT transformation reveals periodic patterns that might not be visible in the original signal.",
       alt: "FFT transformation of ECG signal"
     },

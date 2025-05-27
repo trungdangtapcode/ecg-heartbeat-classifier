@@ -69,7 +69,7 @@ const VisualizationGallery = ({ images }: VisualizationProps) => {
                   onClick={() => setSelectedImageIndex(index)}
                   className={`w-full text-left p-2 rounded-md transition-colors ${
                     selectedImageIndex === index
-                      ? "bg-[#FFD700] text-gray-900 font-medium"
+                      ? "bg-[#FFD700] text-yellow-400 font-medium"
                       : "bg-[#444] text-gray-200 hover:bg-[#555]"
                   }`}
                 >
