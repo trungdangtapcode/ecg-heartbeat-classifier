@@ -6,10 +6,10 @@ import InteractivePage from './InteractivePage/page';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
-import HowItWorksPage from './pages/HowItWorksPage';
+import HowItWorksEnhanced from './pages/HowItWorksEnhanced';
 // import LiveDemoPage from './pages/LiveDemoPage';
 import AboutPage from './pages/AboutPage';
-import CodeShowcase from './pages/ShowCase';
+import ShowCaseEnhanced from './pages/ShowCaseEnhanced';
 import ArduinoPage from './pages/ArduinoPage';
 function App() {
 
@@ -24,9 +24,9 @@ function App() {
       {/* ---------------------------------------------------------------------------------------------------------------------------------------------- */}
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/how-it-works" element={<HowItWorksEnhanced />} />
         {/* <Route path="/live-demo" element={<LiveDemoPage />} /> */}
-        <Route path="/model" element={<CodeShowcase />} />
+        <Route path="/model" element={<ShowCaseEnhanced />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/live-demo" element={<InteractivePage />} />
         <Route path="/arduino" element={<ArduinoPage />} />
