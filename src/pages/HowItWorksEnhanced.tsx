@@ -118,8 +118,7 @@ const reportContent = {
         bestParams: { learning_rate: 0.05, max_depth: 7 }
       }
     }
-  },
-  visualizations: [
+  },  visualizations: [
     {
       src: "/plot/fft.png",
       title: "Time Domain vs Frequency Domain",
@@ -128,27 +127,81 @@ const reportContent = {
     },
     {
       src: "/plot/feature_importance/features_importance_mi.png",
-      title: "Feature Importance Analysis",
-      description: "Top 20 most important features identified by mutual information analysis for heart rhythm classification. This helps identify which parts of the ECG signal contribute most to accurate classification.",
-      alt: "Feature importance chart"
+      title: "Feature Importance - Mutual Information",
+      description: "Top 20 most important features identified by mutual information analysis for heart rhythm classification. This helps identify which specific parts of the ECG signal contribute most to accurate classification.",
+      alt: "Feature importance chart using mutual information"
+    },
+    {
+      src: "/plot/feature_importance/features_importance_rf.png",
+      title: "Feature Importance - Random Forest",
+      description: "Important features identified by Random Forest feature importance, showing which ECG signal features have the highest predictive power. Random Forest provides a different perspective on feature importance compared to statistical methods.",
+      alt: "Feature importance chart from Random Forest"
     },
     {
       src: "/plot/hyperparam_search/accuracy_svmhyper.png",
-      title: "SVM Hyperparameter Tuning Results",
-      description: "Effect of different C and gamma values on SVM performance metrics. Higher values of C lead to more complex models that may overfit, while appropriate gamma values help capture the right level of detail in the data.",
-      alt: "SVM hyperparameter tuning chart"
+      title: "SVM Hyperparameter Tuning - Accuracy",
+      description: "Effect of different C and gamma values on SVM accuracy. Higher values of C lead to more complex models that may overfit, while appropriate gamma values help capture the right level of detail in the data.",
+      alt: "SVM hyperparameter tuning for accuracy"
+    },
+    {
+      src: "/plot/hyperparam_search/f1score_svmhyper.png",
+      title: "SVM Hyperparameter Tuning - F1 Score",
+      description: "Impact of SVM hyperparameters on F1-score, which is particularly important for imbalanced datasets like ECG classification. The plot shows how different combinations of C and gamma affect the balance between precision and recall.",
+      alt: "SVM hyperparameter tuning for F1-score"
+    },
+    {
+      src: "/plot/hyperparam_search/lr_acc.png",
+      title: "Logistic Regression Hyperparameter Tuning",
+      description: "Accuracy results from hyperparameter tuning for Logistic Regression. The plot shows how regularization strength (C) and penalty type affect model performance on ECG classification.",
+      alt: "Logistic Regression hyperparameter tuning"
     },
     {
       src: "/plot/benchmarkplot/roc_curve_XGBoost.png",
       title: "ROC Curves for XGBoost",
-      description: "ROC curves showing the true positive rate against the false positive rate for different thresholds for each class. The area under the curve (AUC) indicates how well the model distinguishes between classes.",
+      description: "ROC curves showing the true positive rate against the false positive rate for different thresholds for each heart rhythm class. The area under the curve (AUC) indicates how well the model distinguishes between classes.",
       alt: "XGBoost ROC curve"
+    },
+    {
+      src: "/plot/benchmarkplot/roc_curve_SVC.png",
+      title: "ROC Curves for SVM",
+      description: "ROC curves for the SVM model across different heart rhythm classes. These curves demonstrate the superior performance of SVM in distinguishing between normal heartbeats and various arrhythmias.",
+      alt: "SVM ROC curve"
+    },
+    {
+      src: "/plot/benchmarkplot/precision_recall_curve_XGBoost.png",
+      title: "Precision-Recall Curves for XGBoost",
+      description: "Precision-Recall curves for XGBoost model, which are particularly useful for evaluating performance on imbalanced datasets. The curves show how the model handles the trade-off between precision and recall for each class.",
+      alt: "XGBoost Precision-Recall curve"
     },
     {
       src: "/plot/sklearn_logistic_coef.png",
       title: "Logistic Regression Coefficients",
-      description: "Visualization of the learned coefficients in the logistic regression model, showing how different features contribute to the classification decision for each class.",
+      description: "Visualization of the learned coefficients in the scikit-learn logistic regression model, showing how different features contribute to the classification decision for each heart rhythm class.",
       alt: "Logistic regression coefficients"
+    },
+    {
+      src: "/plot/my_logistic_coef_bfgs_step.gif",
+      title: "Custom Logistic Regression Training",
+      description: "Animated visualization of how coefficients evolve during the training of the custom logistic regression implementation using the BFGS optimization method. Shows how the model converges to find optimal coefficient values over iterations.",
+      alt: "Animated training of logistic regression"
+    },
+    {
+      src: "/plot/benchmarkplot/calibration_curve_XGBoost.png",
+      title: "Probability Calibration for XGBoost",
+      description: "Calibration curves showing how well the predicted probabilities of the XGBoost model match the actual outcomes. Well-calibrated probabilities are essential for making reliable risk assessments in clinical applications.",
+      alt: "XGBoost calibration curve"
+    },
+    {
+      src: "/plot/FOL_outlier.png",
+      title: "ECG Outlier Detection",
+      description: "Visualization of outliers detected in the ECG dataset using First-Order-Lowpass (FOL) filtering. Identifying outliers is important for data cleaning and understanding anomalous heart rhythms that may require special attention.",
+      alt: "ECG outlier detection"
+    },
+    {
+      src: "/plot/benchmarkplot/facet_histogram_XGBoost.png",
+      title: "Class Probability Distributions - XGBoost",
+      description: "Faceted histograms showing the distribution of predicted probabilities for each heart rhythm class using XGBoost. These distributions illustrate how confidently the model assigns probabilities to different classes.",
+      alt: "XGBoost probability distributions per class"
     }
   ],
   modelComparison: {
@@ -490,13 +543,15 @@ const HowItWorksEnhanced = () => {
                       </span>
                     ))}
                   </div>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#555]">
+                </div>                <div className="mt-4 pt-3 border-t border-[#555]">
                   <p className="text-sm font-medium text-amber-200">Best parameters:</p>
                   <p className="font-mono text-sm mt-1">
                     C = {reportContent.results.hyperparameter.svm.bestParams.C}, 
                     gamma = '{reportContent.results.hyperparameter.svm.bestParams.gamma}'
                   </p>
+                  <div className="mt-2 text-xs text-gray-400">
+                    <p>Based on multiple metrics from plots: accuracy_svmhyper.png, f1score_svmhyper.png, precision_svmhyper.png, and recall_svmhyper.png</p>
+                  </div>
                 </div>
               </div>
               
@@ -521,13 +576,15 @@ const HowItWorksEnhanced = () => {
                       </span>
                     ))}
                   </div>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#555]">
+                </div>                <div className="mt-4 pt-3 border-t border-[#555]">
                   <p className="text-sm font-medium text-amber-200">Best parameters:</p>
                   <p className="font-mono text-sm mt-1">
                     C = {reportContent.results.hyperparameter.logistic.bestParams.C}, 
                     penalty = '{reportContent.results.hyperparameter.logistic.bestParams.penalty}'
                   </p>
+                  <div className="mt-2 text-xs text-gray-400">
+                    <p>Results visualized in lr_acc.png, lr_f1.png, lr_precision.png, and lr_recall.png</p>
+                  </div>
                 </div>
               </div>
               
@@ -552,13 +609,15 @@ const HowItWorksEnhanced = () => {
                       </span>
                     ))}
                   </div>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#555]">
+                </div>                <div className="mt-4 pt-3 border-t border-[#555]">
                   <p className="text-sm font-medium text-amber-200">Best parameters:</p>
                   <p className="font-mono text-sm mt-1">
                     learning_rate = {reportContent.results.hyperparameter.xgboost.bestParams.learning_rate}, 
                     max_depth = {reportContent.results.hyperparameter.xgboost.bestParams.max_depth}
                   </p>
+                  <div className="mt-2 text-xs text-gray-400">
+                    <p>Additional parameters used: objective='multi:softmax', num_class=5, tree_method='hist', device='cuda'</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -595,7 +654,27 @@ const HowItWorksEnhanced = () => {
           
           <h3 className="text-xl font-medium mt-6 mb-3 text-[#FFD700]">Summary</h3>
           <p className="leading-relaxed mb-6">{reportContent.conclusion.summary}</p>
-          
+            <h3 className="text-xl font-medium mt-6 mb-3 text-[#FFD700]">Key Insights from Visualizations</h3>
+          <div className="bg-[#333] p-4 rounded-lg border border-[#555] shadow-md mb-6">
+            <ul className="list-disc pl-5 space-y-2 text-gray-300">
+              <li>
+                <strong className="text-[#FFD700]">Feature Importance:</strong> From the feature importance visualizations (features_importance_mi.png and features_importance_rf.png), we observed that specific segments of the ECG signal (particularly around QRS complexes) contribute significantly more to classification accuracy.
+              </li>
+              <li>
+                <strong className="text-[#FFD700]">Calibration Analysis:</strong> The calibration curves (calibration_curve_XGBoost.png, calibration_curve_SVC.png) revealed that SVM tends to produce less calibrated probability outputs compared to XGBoost, which has implications for reliability in clinical settings.
+              </li>
+              <li>
+                <strong className="text-[#FFD700]">Model Performance:</strong> The ROC and precision-recall curves clearly illustrate that SVM and XGBoost significantly outperform basic Gradient Boosting and Logistic Regression across all heart rhythm classes.
+              </li>
+              <li>
+                <strong className="text-[#FFD700]">Frequency Domain Benefits:</strong> FFT transformation plots demonstrate how certain patterns become more distinguishable in the frequency domain, explaining the consistent performance improvement when using FFT-transformed data.
+              </li>
+              <li>
+                <strong className="text-[#FFD700]">Hyperparameter Sensitivity:</strong> The hyperparameter tuning plots for SVM and Logistic Regression reveal that these models are particularly sensitive to their regularization parameters (C), with sharp performance drops at suboptimal values.
+              </li>
+            </ul>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#333] p-4 rounded-lg border border-[#555] shadow-md">
               <h3 className="text-lg font-medium mb-3 text-[#FFD700]">Limitations</h3>

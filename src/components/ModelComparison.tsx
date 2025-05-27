@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface ModelInfo {
   name: string;
-  type: 'library' | 'scratch';
+  type: string;  // Allow any string value, but typically 'library' or 'scratch'
   description: string;
   advantages: string[];
   limitations: string[];
