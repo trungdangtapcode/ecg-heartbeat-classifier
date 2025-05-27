@@ -111,7 +111,7 @@ weighted avg       0.95      0.93      0.94     21892
     `,
   },
   {
-    name: "GradientBoostingClassifier",
+    name: "GradientBoostingClassifier + FFT",
     metrics: {
       Accuracy: 0.6768225835921798,
       "Balanced Accuracy": 0.7589360721174725,
@@ -148,7 +148,7 @@ weighted avg       0.88      0.68      0.74     21892
     `,
   },
   {
-    name: "XGBoost + classweight",
+    name: "XGBoost + FFT",
     metrics: {
       Accuracy: 0.9710396491869175,
       "Balanced Accuracy": 0.8376472784896526,

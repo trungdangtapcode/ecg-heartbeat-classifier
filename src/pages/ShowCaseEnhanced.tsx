@@ -6,349 +6,21 @@ import AlgorithmCards from '@/components/AlgorithmCards';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from 'framer-motion';
 import BenchmarkScore from '@/components/BenchmarkScore';
+import {
+	svmFromScratch,
+	logisticRegressionFromScratch,
+	svmSklearn,
+	logisticRegressionSklearn,
+	xgboostClassifier,
+	smoteCode,
+	fftCode,
+  //this under is just show-case, we didn't use it in the projet
+  gradientBoostingFromScratch,
+  randomForestFromScratch,
+  randomForestClassifier,
+  gradientBoostingClassifier
+} from '@/components/PythonCodeSnippets';
 
-// Code Snippets
-const svmFromScratch = `import numpy as np
-import cvxopt
-from cvxopt import matrix, solvers
-
-class SVMQP:
-    def __init__(self, epsilon=1e-6, C=1.0, kernel='rbf', gamma=0.1):
-        self.epsilon = epsilon
-        self.C = C
-        self.kernel = kernel
-        self.gamma = gamma
-        self.support_vectors = None
-        self.support_vector_labels = None
-        self.alphas = None
-        self.b = 0
-        
-    def rbf_kernel(self, x1, x2):
-        return np.exp(-self.gamma * np.sum((x1 - x2) ** 2))
-    
-    def compute_kernel_matrix(self, X):
-        n_samples = X.shape[0]
-        K = np.zeros((n_samples, n_samples))
-        for i in range(n_samples):
-            for j in range(n_samples):
-                if self.kernel == 'rbf':
-                    K[i, j] = self.rbf_kernel(X[i], X[j])
-                else:
-                    K[i, j] = np.dot(X[i], X[j])  # Linear kernel
-        return K
-        
-    def fit(self, X, y):
-        n_samples, n_features = X.shape
-        # Convert labels to +1/-1
-        y_binary = np.where(y > 0, 1, -1)
-        
-        # Compute the kernel matrix
-        K = self.compute_kernel_matrix(X)
-        
-        # Set up the QP problem
-        P = matrix(np.outer(y_binary, y_binary) * K)
-        q = matrix(-np.ones(n_samples))
-        
-        # Inequality constraints: 0 <= alpha <= C
-        G = matrix(np.vstack((-np.eye(n_samples), np.eye(n_samples))))
-        h = matrix(np.hstack((np.zeros(n_samples), np.ones(n_samples) * self.C)))
-        
-        # Equality constraint: sum(alpha_i * y_i) = 0
-        A = matrix(y_binary.astype(float)).trans()
-        b = matrix(0.0)
-        
-        # Solve the QP problem
-        solvers.options['show_progress'] = False
-        solution = solvers.qp(P, q, G, h, A, b)
-        
-        # Extract alphas from the solution
-        alphas = np.array(solution['x']).flatten()
-        
-        # Find support vectors (alphas > epsilon)
-        sv_indices = np.where(alphas > self.epsilon)[0]
-        self.alphas = alphas[sv_indices]
-        self.support_vectors = X[sv_indices]
-        self.support_vector_labels = y_binary[sv_indices]
-        
-        # Calculate bias term b
-        self.b = 0
-        for i in range(len(sv_indices)):
-            self.b += self.support_vector_labels[i]
-            self.b -= np.sum(self.alphas * self.support_vector_labels * K[sv_indices[i], sv_indices])
-        self.b /= len(sv_indices)
-        
-    def predict(self, X):
-        y_pred = np.zeros(X.shape[0])
-        for i in range(X.shape[0]):
-            s = 0
-            for alpha, sv_y, sv in zip(self.alphas, self.support_vector_labels, self.support_vectors):
-                if self.kernel == 'rbf':
-                    s += alpha * sv_y * self.rbf_kernel(X[i], sv)
-                else:
-                    s += alpha * sv_y * np.dot(X[i], sv)
-            y_pred[i] = s
-        return np.sign(y_pred + self.b)`;
-
-const logisticRegressionFromScratch = `import numpy as np
-from scipy.optimize import minimize
-
-class MyLogisticRegression:
-    def __init__(self, lr=0.01, max_iter=1000, tol=1e-4, C=1.0):
-        self.lr = lr
-        self.max_iter = max_iter
-        self.tol = tol
-        self.C = C  # Regularization parameter
-        self.theta = None
-        self.classes = None
-        
-    def softmax(self, z):
-        # Avoid numerical overflow by subtracting the maximum
-        exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
-        return exp_z / np.sum(exp_z, axis=1, keepdims=True)
-        
-    def one_hot_encode(self, y):
-        self.classes = np.unique(y)
-        n_samples = len(y)
-        n_classes = len(self.classes)
-        y_encoded = np.zeros((n_samples, n_classes))
-        for i, class_label in enumerate(self.classes):
-            y_encoded[:, i] = (y == class_label).astype(int)
-        return y_encoded
-        
-    def compute_loss(self, theta, X, y_encoded, C):
-        theta_reshaped = theta.reshape(X.shape[1], y_encoded.shape[1])
-        z = X @ theta_reshaped
-        y_pred = self.softmax(z)
-        
-        # Cross-entropy loss
-        loss = -np.sum(y_encoded * np.log(y_pred + 1e-10)) / len(y_encoded)
-        
-        # L2 regularization (excluding bias)
-        # Assuming the first column of X is the bias term
-        reg = 0.5 * C * np.sum(theta_reshaped[1:, :] ** 2)
-        
-        return loss + reg
-        
-    def compute_gradient(self, theta, X, y_encoded, C):
-        theta_reshaped = theta.reshape(X.shape[1], y_encoded.shape[1])
-        z = X @ theta_reshaped
-        y_pred = self.softmax(z)
-        
-        # Gradient of cross-entropy loss
-        grad = X.T @ (y_pred - y_encoded) / len(y_encoded)
-        
-        # Gradient of L2 regularization (excluding bias)
-        reg_grad = np.zeros_like(theta_reshaped)
-        reg_grad[1:, :] = C * theta_reshaped[1:, :]
-        
-        return (grad + reg_grad).flatten()
-        
-    def fit(self, X, y):
-        X_with_bias = np.column_stack([np.ones(X.shape[0]), X])
-        y_encoded = self.one_hot_encode(y)
-        
-        n_features = X_with_bias.shape[1]
-        n_classes = y_encoded.shape[1]
-        
-        # Initialize parameters
-        initial_theta = np.zeros(n_features * n_classes)
-        
-        # Optimize using BFGS
-        result = minimize(
-            fun=self.compute_loss,
-            x0=initial_theta,
-            args=(X_with_bias, y_encoded, self.C),
-            method='BFGS',
-            jac=self.compute_gradient,
-            options={'gtol': self.tol, 'maxiter': self.max_iter}
-        )
-        
-        self.theta = result.x.reshape(n_features, n_classes)
-        
-    def predict_proba(self, X):
-        X_with_bias = np.column_stack([np.ones(X.shape[0]), X])
-        z = X_with_bias @ self.theta
-        return self.softmax(z)
-        
-    def predict(self, X):
-        proba = self.predict_proba(X)
-        return self.classes[np.argmax(proba, axis=1)]`;
-
-const svmSklearn = `from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
-
-# Preprocess data
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-# Define model with optimal hyperparameters 
-model = SVC(
-    kernel='rbf',
-    C=10.0,
-    gamma='scale',
-    class_weight='balanced',
-    decision_function_shape='ovo',
-    random_state=42
-)
-
-# Train the model
-model.fit(X_train, y_train)
-
-# Make predictions
-y_pred = model.predict(X_test)
-
-# Evaluate the model
-from sklearn.metrics import accuracy_score, f1_score, classification_report
-
-accuracy = accuracy_score(y_test, y_pred)
-macro_f1 = f1_score(y_test, y_pred, average='macro')
-weighted_f1 = f1_score(y_test, y_pred, average='weighted')
-
-print(f"Accuracy: {accuracy:.4f}")
-print(f"Macro F1-Score: {macro_f1:.4f}")
-print(f"Weighted F1-Score: {weighted_f1:.4f}")
-print(classification_report(y_test, y_pred))`;
-
-const logisticRegressionSklearn = `from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-
-# Preprocess data
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-# Define model with optimal hyperparameters
-model = LogisticRegression(
-    multi_class='multinomial',
-    solver='saga',
-    C=0.01,
-    penalty='l1',
-    max_iter=1000,
-    random_state=42
-)
-
-# Train the model
-model.fit(X_train, y_train)
-
-# Make predictions
-y_pred = model.predict(X_test)
-
-# Evaluate the model
-from sklearn.metrics import accuracy_score, f1_score, classification_report
-
-accuracy = accuracy_score(y_test, y_pred)
-macro_f1 = f1_score(y_test, y_pred, average='macro')
-weighted_f1 = f1_score(y_test, y_pred, average='weighted')
-
-print(f"Accuracy: {accuracy:.4f}")
-print(f"Macro F1-Score: {macro_f1:.4f}")
-print(f"Weighted F1-Score: {weighted_f1:.4f}")
-print(classification_report(y_test, y_pred))`;
-
-const xgboostClassifier = `import xgboost as xgb
-from sklearn.preprocessing import StandardScaler
-
-# Preprocess data
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-# Convert to DMatrix format for better performance
-dtrain = xgb.DMatrix(X_train, label=y_train)
-dtest = xgb.DMatrix(X_test, label=y_test)
-
-# Define parameters
-params = {
-    'objective': 'multi:softmax',
-    'num_class': 5,
-    'learning_rate': 0.05,
-    'max_depth': 7,
-    'min_child_weight': 1,
-    'gamma': 0,
-    'subsample': 0.8,
-    'colsample_bytree': 0.8,
-    'tree_method': 'hist',
-    'device': 'cuda' # For GPU acceleration
-}
-
-# Train the model
-num_round = 500
-model = xgb.train(
-    params,
-    dtrain,
-    num_round,
-    evals=[(dtrain, 'train'), (dtest, 'test')],
-    early_stopping_rounds=50,
-    verbose_eval=100
-)
-
-# Make predictions
-y_pred = model.predict(dtest)
-
-# Evaluate the model
-from sklearn.metrics import accuracy_score, f1_score, classification_report
-
-accuracy = accuracy_score(y_test, y_pred)
-macro_f1 = f1_score(y_test, y_pred, average='macro')
-weighted_f1 = f1_score(y_test, y_pred, average='weighted')
-
-print(f"Accuracy: {accuracy:.4f}")
-print(f"Macro F1-Score: {macro_f1:.4f}")
-print(f"Weighted F1-Score: {weighted_f1:.4f}")
-print(classification_report(y_test, y_pred))
-
-# Visualize feature importance
-import matplotlib.pyplot as plt
-
-xgb.plot_importance(model, max_num_features=20)
-plt.title('Top 20 Feature Importance in XGBoost Model')
-plt.tight_layout()
-plt.show()`;
-
-const smoteCode = `from imblearn.over_sampling import SMOTE
-from collections import Counter
-
-# Before SMOTE
-print('Original dataset shape:', Counter(y_train))
-
-# Apply SMOTE
-smote = SMOTE(random_state=42)
-X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
-
-# After SMOTE
-print('Resampled dataset shape:', Counter(y_train_resampled))`;
-
-const fftCode = `import numpy as np
-import matplotlib.pyplot as plt
-
-# Select a sample from class 0 (Normal heartbeat)
-sample_idx = np.where(y_train == 0)[0][0]
-ecg_signal = X_train[sample_idx]
-
-# Compute FFT
-fft_signal = np.abs(np.fft.fft(ecg_signal))
-freq = np.fft.fftfreq(len(ecg_signal))
-
-# Plot time domain vs frequency domain
-plt.figure(figsize=(12, 6))
-
-# Time domain plot
-plt.subplot(1, 2, 1)
-plt.plot(ecg_signal)
-plt.title('ECG Signal (Time Domain)')
-plt.xlabel('Sample point')
-plt.ylabel('Amplitude')
-
-# Frequency domain plot
-plt.subplot(1, 2, 2)
-plt.plot(freq[:len(freq)//2], fft_signal[:len(freq)//2])
-plt.title('ECG Signal (Frequency Domain)')
-plt.xlabel('Frequency')
-plt.ylabel('Magnitude')
-
-plt.tight_layout()
-plt.show()`;
 
 // Algorithm Details for AlgorithmCards component
 const algorithms = [
@@ -485,6 +157,18 @@ const ShowCase = () => {
                 <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
                   <CodeTypingEffect title="XGBoost Classifier" code={xgboostClassifier} typingEnabled={typingEnabled} />
                 </div>
+                <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
+                  <CodeTypingEffect title="Gradient Boosting from Scratch" code={gradientBoostingFromScratch} typingEnabled={typingEnabled} />
+                </div>
+                <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
+                  <CodeTypingEffect title="Random Forest from Scratch" code={randomForestFromScratch} typingEnabled={typingEnabled} />
+                </div>
+                <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
+                  <CodeTypingEffect title="Gradient Boosting (scikit-learn)" code={gradientBoostingClassifier} typingEnabled={typingEnabled} />
+                </div>
+                <div className="embla__slide flex-[0_0_100%] min-w-0 bg-[#1a1a1a] p-4 rounded-lg">
+                  <CodeTypingEffect title="Random Forest (scikit-learn)" code={randomForestClassifier} typingEnabled={typingEnabled} />
+                </div>
               </div>
             </div>
 
@@ -525,7 +209,7 @@ const ShowCase = () => {
                     This helps the model learn patterns from all classes equally rather than favoring the majority class.
                   </p>
                   <div className="bg-[#0d0d0d] rounded-lg overflow-x-auto">
-                    <pre className="p-4 text-sm text-gray-300 font-mono">{smoteCode}</pre>
+                    <pre className="p-4 text-sm text-gray-300 font-mono text-left">{smoteCode}</pre>
                   </div>
                 </div>
                 
@@ -536,7 +220,7 @@ const ShowCase = () => {
                     This transformation can help machine learning models identify periodic characteristics essential for heartbeat classification.
                   </p>
                   <div className="bg-[#0d0d0d] rounded-lg overflow-x-auto">
-                    <pre className="p-4 text-sm text-gray-300 font-mono">{fftCode}</pre>
+                    <pre className="p-4 text-sm text-gray-300 font-mono text-left">{fftCode}</pre>
                   </div>
                 </div>
               </div>

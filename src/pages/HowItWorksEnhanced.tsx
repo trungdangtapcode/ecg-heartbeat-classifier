@@ -94,9 +94,9 @@ const reportContent = {
     fft: {
       text: "This section compares the performance of models trained on raw ECG signals versus those trained on FFT-transformed data.",
       table: [
-        { model: "XGBoost (Raw)", accuracy: "0.90", macroF1: "0.78", weightedF1: "0.90" },
+        { model: "XGBoost)", accuracy: "0.90", macroF1: "0.78", weightedF1: "0.90" },
         { model: "XGBoost (FFT)", accuracy: "0.92", macroF1: "0.81", weightedF1: "0.92" },
-        { model: "SVM (Raw)", accuracy: "0.94", macroF1: "0.77", weightedF1: "0.94" },
+        { model: "SVM", accuracy: "0.94", macroF1: "0.77", weightedF1: "0.94" },
         { model: "SVM (FFT)", accuracy: "0.95", macroF1: "0.80", weightedF1: "0.95" }
       ]
     },

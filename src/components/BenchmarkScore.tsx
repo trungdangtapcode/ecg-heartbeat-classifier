@@ -62,11 +62,11 @@ const BenchmarkScore: React.FC = () => {
               </TableHeader>
               <TableBody className="bg-[#222] divide-y divide-gray-700">
                 {[
-                  { model: 'SVM (Raw)', accuracy: '94%', f1: '0.77' },
+                  { model: 'SVM', accuracy: '94%', f1: '0.77' },
                   { model: 'SVM (FFT)', accuracy: '95%', f1: '0.80' },
-                  { model: 'XGBoost (Raw)', accuracy: '90%', f1: '0.78' },
+                  { model: 'XGBoost', accuracy: '90%', f1: '0.78' },
                   { model: 'XGBoost (FFT)', accuracy: '92%', f1: '0.81' },
-                  { model: 'Logistic Regression (Raw)', accuracy: '67%', f1: '0.48' },
+                  { model: 'Logistic Regression', accuracy: '67%', f1: '0.48' },
                   { model: 'Logistic Regression (FFT)', accuracy: '70%', f1: '0.51' },
                 ].map((row, index) => (
                   <TableRow key={index} className="hover:bg-[#333]">
