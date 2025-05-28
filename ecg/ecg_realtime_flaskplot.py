@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 from scipy.interpolate import interp1d
 
 # Serial port configuration
-SERIAL_PORT = 'COM6'  # Replace with your port (e.g., '/dev/ttyUSB0' on Linux)
+SERIAL_PORT = 'COM3'  # Replace with your port (e.g., '/dev/ttyUSB0' on Linux)
 BAUD_RATE = 9600      # Match your device’s baud rate
 TIMEOUT = 1           # Seconds
 FS = 100              # Sampling frequency in Hz

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -18,6 +18,23 @@ const BenchmarkScore: React.FC = () => {
   const [benchmarkViz, setBenchmarkViz] = useState<VizType>('roc');
   const [selectedModel, setSelectedModel] = useState<ModelType>('XGBoost');
 
+  // Create refs for sections to track visibility
+  const titleRef = useRef(null);
+  const metricsRef = useRef(null);
+  const visualizationRef = useRef(null);
+  const insightsRef = useRef(null);
+  const predictionsRef = useRef(null);
+  const classSpecificRef = useRef(null);
+  const allTableRef = useRef(null);
+    // Setup inView states for each section with a more responsive threshold
+  const titleInView = useInView(titleRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+  const metricsInView = useInView(metricsRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+  const visualizationInView = useInView(visualizationRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+  const insightsInView = useInView(insightsRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+  const predictionsInView = useInView(predictionsRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+  const classSpecificInView = useInView(classSpecificRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+  const allTableInView = useInView(allTableRef, { once: false, amount: 0.2, margin: "-100px 0px" });
+
   const getModelFileName = (model: ModelType) => {
     return model === 'SVM' ? 'SVC' : model === 'Logistic' ? 'LogisticRegression' : model;
   };
@@ -27,22 +44,22 @@ const BenchmarkScore: React.FC = () => {
   }
 
   return (
-    <section className="mt-12 mb-8">
-      <motion.h3
+    <section className="mt-12 mb-8">      <motion.h3
         className="text-2xl font-bold mb-6 text-center text-[#facc15]"
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        animate={titleInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        ref={titleRef}
       >
         Model Benchmark Results
       </motion.h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Performance Metrics */}
-        <motion.div
+        {/* Performance Metrics */}        <motion.div
           className="bg-[#222] rounded-lg p-5 border border-[#444] shadow-lg"
           initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          animate={metricsInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
           transition={{ duration: 0.5, delay: 0.2 }}
+          ref={metricsRef}
         >
           <h4 className="text-xl font-semibold mb-4 text-[#facc15]">Performance Metrics</h4>
           <div className="overflow-x-auto">
@@ -89,12 +106,12 @@ const BenchmarkScore: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Visualization */}
-        <motion.div
+        {/* Visualization */}        <motion.div
           className="bg-[#222] rounded-lg p-5 border border-[#444] shadow-lg flex flex-col"
           initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          animate={visualizationInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
           transition={{ duration: 0.5, delay: 0.4 }}
+          ref={visualizationRef}
         >
           <div className="flex justify-between items-center mb-4">
             <h4 className="text-xl font-semibold text-[#facc15]">Model Visualizations</h4>
@@ -113,14 +130,13 @@ const BenchmarkScore: React.FC = () => {
             </div>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.img
+            <AnimatePresence mode="wait">              <motion.img
                 key={benchmarkViz}
                 src={`/plot/benchmarkplot/${getCurveFileName(benchmarkViz)}_curve_${getModelFileName(selectedModel)}.png`}
                 alt={`${benchmarkViz.charAt(0).toUpperCase() + benchmarkViz.slice(1)} Curves for ${selectedModel} Model`}
                 className="rounded-lg border border-[#444] max-h-80 object-contain"
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={visualizationInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               />
@@ -150,12 +166,13 @@ const BenchmarkScore: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Key Insights & Additional Visualizations */}
+      {/* Key Insights & Additional Visualizations */}      
       <motion.div
         className="mt-8"
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
+        animate={insightsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5, delay: 0.6 / 10 }}
+        ref={insightsRef}
       >
         <h4 className="text-xl font-semibold mb-4 text-center text-[#facc15]">
           Key Insights & Performance Analysis
@@ -174,25 +191,25 @@ const BenchmarkScore: React.FC = () => {
               title: 'From-Scratch vs. Library',
               text: 'From-scratch implementations performed within 5% of their library counterparts, with SVM from scratch achieving 90% accuracy compared to 94% from the library implementation.',
             },
-          ].map((insight, index) => (
-            <motion.div
+          ].map((insight, index) => (            
+          <motion.div
               key={index}
               className="bg-[#222] p-4 rounded-lg border border-[#444]"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={insightsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.5, delay: 0.8 + index * 0.2 }}
             >
               <h5 className="font-medium text-[#facc15] mb-2">{insight.title}</h5>
               <p className="text-sm text-gray-300">{insight.text}</p>
             </motion.div>
           ))}
-        </div>
-
+        </div>        
         <motion.div
           className="bg-[#222] p-5 rounded-lg border border-[#444] shadow-lg"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={predictionsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.5, delay: 1.4 }}
+          ref={predictionsRef}
         >
           <h4 className="text-xl font-semibold mb-4 text-[#facc15]">Prediction Distribution</h4>
           <div className="flex flex-wrap justify-center gap-4 mb-4">
@@ -209,26 +226,26 @@ const BenchmarkScore: React.FC = () => {
             ))}
           </div>
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6">
-            <div className="w-full lg:w-1/2">
-              <motion.img
+            <div className="w-full lg:w-1/2">              
+            <motion.img
                 src={`/plot/benchmarkplot/combined_histogram_${getModelFileName(selectedModel)}.png`}
                 alt={`Combined Histogram for ${selectedModel} Model`}
                 className="rounded-lg border border-[#444] max-h-80 object-contain mx-auto"
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={predictionsInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               />
               <p className="text-xs text-center text-gray-400 mt-2">
                 Combined prediction probabilities across all classes
               </p>
             </div>
-            <div className="w-full lg:w-1/2">
-              <motion.img
+            <div className="w-full lg:w-1/2">              
+            <motion.img
                 src={`/plot/benchmarkplot/facet_histogram_${getModelFileName(selectedModel)}.png`}
                 alt={`Class-wise Histograms for ${selectedModel} Model`}
                 className="rounded-lg border border-[#444] max-h-80 object-contain mx-auto"
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={predictionsInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               />
               <p className="text-xs text-center text-gray-400 mt-2">
@@ -250,12 +267,12 @@ const BenchmarkScore: React.FC = () => {
         </motion.div>
       </motion.div>
 
-      {/* Class-Specific Performance Comparison */}
-      <motion.div
+      {/* Class-Specific Performance Comparison */}      <motion.div
         className="mt-6 bg-[#222] p-5 rounded-lg border border-[#444] shadow-lg"
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 1.8 }}
+        animate={classSpecificInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5, delay: 1.8 / 10 }}
+        ref={classSpecificRef}
       >
         <h4 className="text-xl font-semibold mb-4 text-[#facc15]">
           Class-Specific Performance Comparison
@@ -323,8 +340,14 @@ const BenchmarkScore: React.FC = () => {
             </li>
           </ul>
         </div>
+      </motion.div>	  <motion.div 
+        ref={allTableRef}
+        initial={{ opacity: 0, y: 20 }}
+        animate={allTableInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <BenchmarkAllTable />
       </motion.div>
-	  <BenchmarkAllTable/>
     </section>
   );
 };

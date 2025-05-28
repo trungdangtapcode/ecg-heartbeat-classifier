@@ -10,7 +10,7 @@ lerna-debug.log*
 tmp.txt
 *.pkl
 *.csv
-ecg*.py
+# ecg*.py
 
 __pycache__/
 

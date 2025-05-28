@@ -137,6 +137,24 @@ const reportContent = {
       description: "Important features identified by Random Forest feature importance, showing which ECG signal features have the highest predictive power. Random Forest provides a different perspective on feature importance compared to statistical methods.",
       alt: "Feature importance chart from Random Forest"
     },
+	  {
+      src: "/plot/feature_importance/features_importance_f_score.png",
+      title: "Feature Importance - ANOVA",
+      description: "Important features identified by the ANOVA F-score, highlighting which ECG signal features best separate class means. ",
+      alt: "Feature importance chart from ANOVA F-Score"
+    },
+    {
+      src: "/plot/feature_importance/features_importance_chi2.png",
+      title: "Feature Importance - Chi2",
+      description: "Important features identified by the Chi-squared test, showing which ECG signal features have the strongest statistical association with the target variable",
+      alt: "Feature importance chart from ANOVA Chi-square"
+    },
+    {
+      src: "/plot/correlation_matrix.png",
+      title: "Correlation Matrix",
+      description: "Correlation matrix  shows the pairwise linear relationships between different time-dependent variables (or between lagged versions of the same variable).",
+      alt: "Correlation matrix for time series data"
+    },
     {
       src: "/plot/hyperparam_search/accuracy_svmhyper.png",
       title: "SVM Hyperparameter Tuning - Accuracy",

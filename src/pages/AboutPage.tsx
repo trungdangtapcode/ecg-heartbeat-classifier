@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+// import AnimatedAvatar from "./AnimatedAvatar";
 
 const AboutPage = () => {
   const containerVariants = {
@@ -24,16 +25,46 @@ const AboutPage = () => {
     hover: { scale: 1.05, rotate: 5, transition: { duration: 0.3 } },
   };
 
+  const teamMembers = [
+    {
+      name: "Nguyen Tran Nhat Trung",
+      id: "23521684",
+      job: "Code and experiment with algorithms, Front-end, present and build hardware for demo."
+    },
+    {
+      name: "Ha Minh Truong",
+      id: "23521689",
+      job: "Write and summarize the main content of the project report, prepare Powerpoint."
+    },
+    {
+      name: "Nguyen Hoang Tuan",
+      id: "23521719",
+      job: "Develop website to demonstrate prediction models and present."
+    },
+    {
+      name: "Mai Xuan Tuan",
+      id: "23521714",
+      job: "Prepare Powerpoint and present."
+    }
+  ];
+
   return (
     <div>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#363636] to-gray-800 flex items-center justify-center p-4 sm:p-8
-      flex-col">
+      
+      {/* <AnimatedAvatar/> */}
+      {/* <AnimatedAvatar
+        src="wtm_about.png"
+        alt="Animated Avatar"
+        size={64}
+      /> */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#363636] to-gray-800 flex items-center justify-center p-4 sm:p-8 flex-col">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="max-w-5xl w-full"
         >
+          {/* <AnimatedAvatar/> */}
           <Card className="bg-black/80 backdrop-blur-md border border-yellow-500/20 shadow-xl hover:shadow-yellow-500/10 transition-shadow duration-500">
             <CardContent className="p-6 sm:p-12 flex flex-col md:flex-row items-center gap-8">
               <motion.div
@@ -80,7 +111,6 @@ const AboutPage = () => {
             </CardContent>
           </Card>
         </motion.div>
-      {/* </div> */}
 
         <motion.div
           variants={containerVariantsName}
@@ -89,41 +119,25 @@ const AboutPage = () => {
           className="max-w-5xl w-full mt-10"
         >
           <Card className="bg-black/80 backdrop-blur-md border border-yellow-500/20 shadow-xl hover:shadow-yellow-500/10 transition-shadow duration-500">
-            <CardContent className="p-6 sm:p-12 flex flex-col md:flex-row items-center gap-8">
-              <div className="flex flex-col items-center space-y-4 w-full">
-              <h2 className="mb-8 text-l sm:text-l font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
+            <CardContent className="p-6 sm:p-12 flex flex-col items-center gap-8">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500 text-center mb-8">
                 Group 11
               </h2>
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                Nguyen Tran Nhat Nhat Trung
-              </h1>
-              <h2 className="mb-8 text-l sm:text-l font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                23521684
-              </h2>
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                Ha Minh Truong
-              </h1>
-              <h2 className="mb-8 text-l sm:text-l font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                23521689
-              </h2>
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                Nguyen Hoang Tuan
-              </h1>
-              <h2 className="mb-8 text-l sm:text-l font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                23521719
-              </h2>
-              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                Mai Xuan Tuan
-              </h1>
-              <h2 className="mb-8 text-l sm:text-l font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">
-                23521714
-              </h2>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                {teamMembers.map((member, index) => (
+                  <div key={index} className="p-4 border border-yellow-500/30 rounded-lg hover:shadow-yellow-500/20 hover:-translate-y-1 transition-all">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500 font-serif hover:underline">
+                      {member.name}
+                    </h1>
+                    <h2 className="text-lg text-yellow-200 mt-2">{member.id}</h2>
+                    <p className="text-sm text-yellow-100 mt-2">{member.job}</p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
-      <div className="h-screen" />
     </div>
   );
 };
