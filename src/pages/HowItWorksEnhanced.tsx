@@ -340,7 +340,7 @@ const HowItWorksEnhanced = () => {
   const isConclusionInView = useInView(conclusionRef, { once: false, margin: '-100px' });
 
   return (
-    <div className="bg-[#363636] text-gray-200 min-h-screen grow w-full">
+    <div className="font-playwrite bg-[#363636] text-gray-200 min-h-screen grow w-full">
       <header className="bg-[#363636] p-6 text-center">
         <h1 className="text-4xl font-bold text-[#FFD700]">How It Works</h1>
       </header>

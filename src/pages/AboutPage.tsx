@@ -49,7 +49,7 @@ const AboutPage = () => {
   ];
 
   return (
-    <div>
+    <div className='font-playwrite'>
       
       {/* <AnimatedAvatar/> */}
       {/* <AnimatedAvatar
@@ -126,7 +126,8 @@ const AboutPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                 {teamMembers.map((member, index) => (
                   <div key={index} className="p-4 border border-yellow-500/30 rounded-lg hover:shadow-yellow-500/20 hover:-translate-y-1 transition-all">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500 font-serif hover:underline">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 
+                    to-yellow-500 font-playwrite hover:underline">
                       {member.name}
                     </h1>
                     <h2 className="text-lg text-yellow-200 mt-2">{member.id}</h2>
